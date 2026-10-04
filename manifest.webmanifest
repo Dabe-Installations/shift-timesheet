@@ -1,0 +1,23 @@
+{
+  "name": "Dabe Timesheet",
+  "short_name": "Timesheet",
+  "description": "Dabe shift timesheet",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0d0d",
+  "theme_color": "#0d0d0d",
+  "icons": [
+    {
+      "src": "https://runs.dabelabour.com.au/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://runs.dabelabour.com.au/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
