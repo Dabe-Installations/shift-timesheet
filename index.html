@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0d">
+<title>Dabe Shift Timesheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d0d; --card:#161616; --text:#f4f4f2; --muted:#8a8a87; --line:#2a2a2a;
+  --accent:#47b399; --deep:#1f695c; --deep2:#144a3d; --accent-ink:#fff; --accent-soft:#12312b; --ok:#47b399; --bad:#e0343b; --field:#0f0f0f;
+  --head:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 "Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+header{padding:calc(20px + env(safe-area-inset-top)) 0 14px;border-bottom:1px solid var(--line)}
+.eyebrow{font:700 12px/1 var(--head);letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+header h1{font:700 40px/.95 var(--head);text-transform:uppercase;margin:0;letter-spacing:.005em}
+header p{margin:8px 0 0;color:var(--muted);font-size:14.5px}
+.banner{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--text);padding:10px 12px;border-radius:2px;font-size:13.5px;margin:14px 0 0}
+.card{background:var(--card);border:1px solid var(--line);border-top:2px solid var(--deep);border-radius:2px;padding:16px;margin-top:14px}
+.card h2{font:700 14px/1 var(--head);letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+label,.lab{display:block;font:700 15px/1.1 var(--head);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 7px}
+label:first-of-type,.card h2+label,.card h2+.lab{margin-top:0}
+.hint{font-weight:400;color:var(--muted);font-size:13px;margin:-2px 0 8px;font-family:"Barlow",sans-serif;letter-spacing:0;text-transform:none}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%;min-height:52px;border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:2px;padding:12px 14px;font:inherit;font-size:17px;appearance:none;-webkit-appearance:none;
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%2347b399' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+textarea{min-height:84px;resize:vertical}
+input::placeholder,textarea::placeholder{color:#5d5d5b}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.invalid{border-color:var(--bad)!important}
+.err{color:#ff6b70;font-size:13px;margin-top:6px;display:none}
+.err.show{display:block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:2px;padding:10px 16px;font:700 17px/1 var(--head);letter-spacing:.08em;text-transform:uppercase;min-height:46px}
+.chip[aria-checked=true]{background:var(--deep);border-color:var(--accent);color:#fff}
+.quick{display:flex;gap:8px;margin-top:8px}
+.quick button,.ghost{border:1px solid #4a4a48;background:transparent;color:var(--text);border-radius:2px;padding:10px 16px;font:700 15px/1 var(--head);letter-spacing:.12em;text-transform:uppercase;min-height:44px}
+.loc{display:flex;gap:8px}
+.loc button{flex:none;min-width:84px;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:2px;font:700 16px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.locs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.locs .tag{display:flex;align-items:center;gap:8px;background:var(--deep);border:1px solid var(--accent);border-radius:2px;padding:6px 6px 6px 8px;font-weight:600;font-size:15.5px}
+.locs .tag b{min-width:22px;height:22px;background:#fff;color:var(--deep);font:700 14px/22px var(--head);text-align:center;border-radius:1px}
+.locs .tag button{border:0;background:transparent;color:#bfe5db;font-size:20px;line-height:1;padding:2px 8px;min-height:32px}
+.note{font-size:13.5px;color:var(--muted);margin-top:8px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.switch:first-of-type{border-top:0}
+.switch .t{font:700 16px/1.1 var(--head);letter-spacing:.1em;text-transform:uppercase}.switch .s{font-size:13px;color:var(--muted);margin-top:2px}
+.switch input{appearance:none;-webkit-appearance:none;flex:none;width:54px;height:30px;border-radius:2px;background:#2a2a2a;position:relative;transition:.15s;border:0;min-height:0;padding:0}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:1px;background:#d8d8d6;transition:.15s}
+.switch input:checked{background:var(--deep)}
+.switch input:checked::after{transform:translateX(24px);background:#fff}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(13,13,13,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{max-width:560px;margin:0 auto}
+.primary{width:100%;min-height:56px;border:1px solid var(--accent);border-radius:2px;background:var(--deep);color:#fff;font:700 21px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.primary:disabled{opacity:.6}
+.recent{list-style:none;margin:0;padding:0}
+.recent li{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid var(--line);font-size:15px}
+.recent li:first-child{border-top:0}
+.recent .m{color:var(--muted);font-size:13px}
+.recent .h{font:700 20px/1 var(--head);white-space:nowrap;color:var(--accent)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;z-index:10}
+.sheet.open{display:flex}
+.panel{background:var(--card);border-top:2px solid var(--accent);width:100%;max-width:560px;margin:0 auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+.panel h3{margin:0 0 4px;font:700 28px/1 var(--head);text-transform:uppercase}
+.sum{margin:12px 0 16px}
+.sum div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--line);font-size:15.5px}
+.sum div:first-child{border-top:0}
+.sum span:first-child{color:var(--muted);flex:none;font:700 14px/1.6 var(--head);letter-spacing:.12em;text-transform:uppercase}.sum span:last-child{text-align:right;font-weight:600;word-break:break-word}
+.btns{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+.btns .primary{min-height:54px}.btns .ghost{min-height:54px;font-size:18px}
+.done{text-align:center;padding:36px 8px 8px}
+.tick{width:84px;height:84px;border-radius:2px;background:var(--deep);border:1px solid var(--accent);color:#fff;display:grid;place-items:center;font-size:46px;margin:0 auto 14px}
+.done h2{font:700 36px/1 var(--head);margin:0 0 6px;text-transform:uppercase;letter-spacing:.02em;color:var(--text)}
+.done p{color:var(--muted);margin:0 0 20px}
+.hidden{display:none!important}
+.fail{background:rgba(224,52,59,.14);border:1px solid var(--bad);color:var(--text);border-radius:2px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Dabe Labour · Installations &amp; Maintenance</div>
+    <h1>Shift timesheet</h1>
+    <p>Fill in once per shift. Your hours and pay are worked out for you.</p>
+  </header>
+  <div id="banner" class="banner hidden"><b>Preview mode.</b> Nothing is sent to the sheet yet.</div>
+
+  <form id="form" novalidate autocomplete="off">
+    <section class="card" id="who">
+      <h2>You</h2>
+      <div id="nameBox"></div>
+      <div class="lab" style="margin-top:14px">Your role</div>
+      <div class="chips" id="roles" role="radiogroup" aria-label="Role"></div>
+      <div class="err" id="e-role">Pick your role</div>
+    </section>
+
+    <section class="card">
+      <h2>The job</h2>
+      <label for="project">Project</label>
+      <select id="project"></select>
+      <input type="text" id="projectOther" class="hidden" placeholder="Type the project name" style="margin-top:8px">
+      <div class="err" id="e-project">Pick the project</div>
+
+      <label for="locIn">Location(s)</label>
+      <div class="hint">Suburb or town of each store or site, in the order you visited.</div>
+      <div class="loc">
+        <input type="text" id="locIn" placeholder="e.g. Chadstone" enterkeyhint="done" autocapitalize="words">
+        <button type="button" id="locAdd">Add</button>
+      </div>
+      <div class="locs" id="locs"></div>
+      <div class="err" id="e-loc">Add at least one location</div>
+    </section>
+
+    <section class="card">
+      <h2>When</h2>
+      <label for="date">Date</label>
+      <input type="date" id="date">
+      <div class="quick"><button type="button" id="today">Today</button><button type="button" id="yday">Yesterday</button></div>
+      <div class="err" id="e-date">Pick the date</div>
+
+      <div class="row2" style="margin-top:16px">
+        <div><label for="start" style="margin-top:0">Start</label><input type="time" id="start"></div>
+        <div><label for="finish" style="margin-top:0">Finish</label><input type="time" id="finish"></div>
+      </div>
+      <div class="note hidden" id="overnight">Finishes the next day (overnight shift).</div>
+      <div class="err" id="e-time">Add start and finish times (they can’t be the same)</div>
+    </section>
+
+    <section class="card">
+      <h2>Extras</h2>
+      <div class="row2">
+        <div>
+          <label for="km" style="margin-top:0">KMs</label>
+          <input type="number" id="km" inputmode="decimal" min="0" step="1" placeholder="0">
+        </div>
+        <div>
+          <label for="travel" style="margin-top:0">Travel time (hrs)</label>
+          <select id="travel"></select>
+        </div>
+      </div>
+      <div class="note">KMs are paid on the way home only (own vehicle, carrying tools). Travel time is paid on the way home when you worked at more than one location; regional jobs both ways.</div>
+      <div style="margin-top:10px">
+        <div class="switch"><div><div class="t">LAFHA</div><div class="s">Living away from home – per night away</div></div><input type="checkbox" id="lafha"></div>
+        <div class="switch"><div><div class="t">Fuel allowance</div><div class="s">Only if one applies to this shift</div></div><input type="checkbox" id="fuel"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Notes</h2>
+      <label for="comments" style="margin-top:0">Comments <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+      <textarea id="comments" placeholder="Anything we should know about this shift"></textarea>
+    </section>
+  </form>
+
+  <section class="card hidden" id="recentCard">
+    <h2>Your latest entries</h2>
+    <ul class="recent" id="recent"></ul>
+  </section>
+
+  <section class="card done hidden" id="done">
+    <div class="tick">✓</div>
+    <h2>Sent!</h2>
+    <p>Your shift has been added to your timesheet.</p>
+    <button class="primary" id="another" type="button">Add another shift</button>
+  </section>
+</div>
+
+<div class="bar" id="bar"><div class="in"><button class="primary" id="review" type="button">Review &amp; send</button></div></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="rt">
+  <div class="panel">
+    <h3 id="rt">Check your shift</h3>
+    <div class="note" style="margin:0">Make sure this is right, then send.</div>
+    <div class="sum" id="sum"></div>
+    <div id="pinRow" class="hidden" style="margin:0 0 16px">
+      <label for="pin" style="margin-top:0">Your PIN</label>
+      <div class="hint">The PIN Gabriel gave you. You only need to enter it once on this phone.</div>
+      <input type="password" id="pin" inputmode="numeric" autocomplete="off" placeholder="PIN">
+      <div class="err" id="e-pin">Enter your PIN</div>
+    </div>
+    <div class="fail hidden" id="fail"></div>
+    <div class="btns">
+      <button class="ghost" type="button" id="edit">Edit</button>
+      <button class="primary" type="button" id="send">Send to Dabe</button>
+    </div>
+    <div class="quick hidden" id="copyRow"><button type="button" id="copy" class="ghost" style="width:100%">Copy summary to send by text</button></div>
+  </div>
+</div>
+
+<script>
+/* ============ SETTINGS (edit these) ============ */
+const CONFIG = {
+  // One entry per contractor. url = the "Web app URL" from that contractor's sheet.
+  // Leave url empty to run in preview mode. If everyone shares one sheet, use the same url for all.
+  CONTRACTORS: [
+    { name: "Leonardo Lisboa", url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER" }
+  ],
+  ROLES: [
+    ["LABOURER","Labourer"],["GENERAL HAND","General hand"],["INSTALLER","Installer"],
+    ["DISPLAYWISE RATE","DisplayWise"],["GRILL'D RATE","Grill'd"]
+  ],
+  PROJECTS: ["3FOLD","ALDI - BUILD","ALDI - MAINTENANCE","BONUS","Cellarbrations","DISPLAYWISE","DYSON","GRILL'D","HOW GROUP","IGA","KMART","Mills","NESPRESSO","SAMSUNG","SHARK","Spotlight","TrueSet","WOOLIES","Yang Yang"],
+  TZ: "Australia/Melbourne"
+};
+/* ================================================ */
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try{ return localStorage.getItem("dabe_"+k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem("dabe_"+k,v); }catch(e){} }
+};
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let role = "", locs = [], lastSummary = "";
+const pinKey = w => "pin_" + (w ? w.name : "");
+const savedPin = w => store.get(pinKey(w)) || "";
+function currentPin(w){ return savedPin(w) || ($("pin") ? $("pin").value.trim() : ""); }
+
+/* ---- date helpers (Melbourne) ---- */
+function melDate(offset){
+  const d = new Date(Date.now() + (offset||0)*864e5);
+  return d.toLocaleDateString("en-CA",{timeZone:CONFIG.TZ}); // yyyy-mm-dd
+}
+function fmtDate(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+}
+function fmt12(t){
+  const [h,m] = t.split(":").map(Number);
+  const ap = h>=12 ? "pm":"am"; const hh = h%12===0 ? 12 : h%12;
+  return hh+":"+String(m).padStart(2,"0")+" "+ap;
+}
+
+/* ---- build the form ---- */
+const contractors = CONFIG.CONTRACTORS;
+const previewMode = contractors.every(c => !c.url);
+if (previewMode) $("banner").classList.remove("hidden");
+
+function buildName(){
+  const box = $("nameBox");
+  if (contractors.length === 1){
+    box.innerHTML = '<div style="font:700 30px/1 var(--head);text-transform:uppercase">Hi, '+esc(contractors[0].name.split(" ")[0])+'</div><div class="note" style="margin-top:2px">'+esc(contractors[0].name)+'</div>';
+  } else {
+    box.innerHTML = '<label for="who">Your name</label><select id="who"></select><div class="err" id="e-who">Pick your name</div>';
+    const s = $("who");
+    s.innerHTML = '<option value="">Select your name…</option>' + contractors.map(c => '<option>'+esc(c.name)+'</option>').join("");
+    const qn = new URLSearchParams(location.search).get("name") || store.get("name");
+    if (qn && contractors.some(c => c.name === qn)) s.value = qn;
+    s.addEventListener("change", () => { store.set("name", s.value); applyDefaultRole(); loadRecent(); });
+  }
+}
+const who = () => contractors.length === 1 ? contractors[0] : contractors.find(c => c.name === ($("who")||{}).value);
+
+function buildRoles(){
+  $("roles").innerHTML = CONFIG.ROLES.map(([v,l]) =>
+    '<button type="button" class="chip" role="radio" aria-checked="false" data-v="'+esc(v)+'">'+esc(l)+'</button>').join("");
+  $("roles").addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    setRole(b.dataset.v); store.set("role", role);
+  });
+}
+function setRole(v){
+  role = v;
+  document.querySelectorAll("#roles .chip").forEach(b => b.setAttribute("aria-checked", b.dataset.v === v));
+  $("e-role").classList.remove("show");
+}
+function applyDefaultRole(){
+  const saved = store.get("role"); const w = who();
+  const pick = saved || (w && w.role) || "";
+  if (pick && CONFIG.ROLES.some(r => r[0] === pick)) setRole(pick);
+}
+
+function buildProject(){
+  $("project").innerHTML = '<option value="">Select project…</option>' +
+    CONFIG.PROJECTS.map(p => '<option>'+esc(p)+'</option>').join("") + '<option value="__other">Other…</option>';
+  const last = store.get("project"); if (last && CONFIG.PROJECTS.includes(last)) $("project").value = last;
+  $("project").addEventListener("change", () => {
+    $("projectOther").classList.toggle("hidden", $("project").value !== "__other");
+    if ($("project").value === "__other") $("projectOther").focus();
+    $("e-project").classList.remove("show");
+  });
+}
+function buildTravel(){
+  let o = '<option value="">None</option>';
+  for (let i=0.5;i<=8;i+=0.5) o += '<option value="'+i+'">'+i+' hr'+(i===1?'':'s')+'</option>';
+  $("travel").innerHTML = o;
+}
+
+function renderLocs(){
+  $("locs").innerHTML = locs.map((l,i) =>
+    '<div class="tag"><b>'+(i+1)+'</b>'+esc(l)+'<button type="button" data-i="'+i+'" aria-label="Remove '+esc(l)+'">×</button></div>').join("");
+  if (locs.length) $("e-loc").classList.remove("show");
+}
+function addLoc(){
+  const v = $("locIn").value.trim().replace(/\s+/g," ");
+  if (!v) return;
+  v.split(",").map(s => s.trim()).filter(Boolean).forEach(s => locs.push(s));
+  $("locIn").value = ""; renderLocs();
+}
+$("locAdd").addEventListener("click", () => { addLoc(); $("locIn").focus(); });
+$("locIn").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); addLoc(); } });
+$("locs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-i]"); if (!b) return;
+  locs.splice(+b.dataset.i,1); renderLocs();
+});
+
+$("today").addEventListener("click", () => { $("date").value = melDate(0); $("e-date").classList.remove("show"); });
+$("yday").addEventListener("click", () => { $("date").value = melDate(-1); $("e-date").classList.remove("show"); });
+function checkOvernight(){
+  const s = $("start").value, f = $("finish").value;
+  $("overnight").classList.toggle("hidden", !(s && f && f < s));
+  if (s && f && s !== f) $("e-time").classList.remove("show");
+}
+$("start").addEventListener("input", checkOvernight);
+$("finish").addEventListener("input", checkOvernight);
+
+/* ---- validate + review ---- */
+function projectValue(){
+  const p = $("project").value;
+  return p === "__other" ? $("projectOther").value.trim() : p;
+}
+function validate(){
+  let ok = true, first = null;
+  const bad = (id, cond, field) => { const e = $(id); if (!e) return; e.classList.toggle("show", cond); if (field) $(field).classList.toggle("invalid", cond); if (cond){ ok = false; if(!first) first = e; } };
+  if (contractors.length > 1) bad("e-who", !$("who").value, "who");
+  bad("e-role", !role);
+  bad("e-project", !projectValue(), "project");
+  if ($("locIn").value.trim()) addLoc();
+  bad("e-loc", locs.length === 0);
+  bad("e-date", !$("date").value, "date");
+  bad("e-time", !$("start").value || !$("finish").value || $("start").value === $("finish").value);
+  if (first) first.scrollIntoView({behavior:"smooth", block:"center"});
+  return ok;
+}
+function payload(){
+  const w = who();
+  return {
+    pin: currentPin(w), name: w.name, role, project: projectValue(), location: locs.join(", "),
+    date: $("date").value, start: $("start").value, finish: $("finish").value,
+    km: $("km").value.trim(), travel: $("travel").value, lafha: $("lafha").checked, fuel: $("fuel").checked,
+    comments: $("comments").value.trim()
+  };
+}
+function summaryRows(p){
+  const roleLabel = (CONFIG.ROLES.find(r => r[0] === p.role)||[0,p.role])[1];
+  return [
+    ["Name", p.name], ["Role", roleLabel], ["Project", p.project], ["Location(s)", p.location],
+    ["Date", fmtDate(p.date)],
+    ["Time", fmt12(p.start)+" → "+fmt12(p.finish)+(p.finish < p.start ? " (next day)" : "")],
+    ["KMs", p.km || "—"], ["Travel time", p.travel ? p.travel+" hrs" : "—"],
+    ["LAFHA", p.lafha ? "Yes" : "No"], ["Fuel allowance", p.fuel ? "Yes" : "No"],
+    ["Comments", p.comments || "—"]
+  ];
+}
+$("review").addEventListener("click", () => {
+  if (!validate()) return;
+  const p = payload(); const rows = summaryRows(p);
+  $("sum").innerHTML = rows.map(r => '<div><span>'+esc(r[0])+'</span><span>'+esc(r[1])+'</span></div>').join("");
+  lastSummary = "Shift – " + rows.map(r => r[0]+": "+r[1]).join("\n");
+  $("fail").classList.add("hidden"); $("copyRow").classList.add("hidden");
+  const w0 = who();
+  const needPin = !!(w0 && w0.url && !savedPin(w0));
+  $("pinRow").classList.toggle("hidden", !needPin); $("pin").value = ""; $("e-pin").classList.remove("show");
+  $("send").disabled = false; $("send").textContent = "Send to Dabe";
+  $("sheet").classList.add("open");
+});
+$("edit").addEventListener("click", () => $("sheet").classList.remove("open"));
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet")) $("sheet").classList.remove("open"); });
+
+/* ---- send ---- */
+async function send(){
+  const p = payload(); const w = who();
+  if (!w.url){ await new Promise(r => setTimeout(r, 700)); return {ok:true, preview:true}; }
+  const res = await fetch(w.url, { method:"POST", body: JSON.stringify(p), redirect:"follow" });
+  return await res.json();
+}
+$("send").addEventListener("click", async () => {
+  const btn = $("send"); $("fail").classList.add("hidden");
+  const w1 = who();
+  if (w1 && w1.url && !currentPin(w1)){ $("e-pin").classList.add("show"); $("pin").focus(); return; }
+  btn.disabled = true; btn.textContent = "Sending…";
+  try{
+    const r = await send();
+    if (r && r.ok){
+      if (w1 && w1.url) store.set(pinKey(w1), currentPin(w1));
+      store.set("project", CONFIG.PROJECTS.includes(projectValue()) ? projectValue() : "");
+      $("sheet").classList.remove("open");
+      $("form").classList.add("hidden"); $("bar").classList.add("hidden");
+      $("done").classList.remove("hidden"); window.scrollTo({top:0,behavior:"smooth"});
+      loadRecent();
+    } else {
+      throw new Error((r && r.error) || "Something went wrong");
+    }
+  }catch(err){
+    const dup = /already in the timesheet/i.test(err.message);
+    const badPin = /wrong pin/i.test(err.message);
+    if (badPin){ try{ localStorage.removeItem("dabe_"+pinKey(w1)); }catch(e){} $("pinRow").classList.remove("hidden"); $("pin").value = ""; }
+    $("fail").textContent = badPin ? "That PIN isn’t right. Check it with Gabriel and try again."
+      : dup ? err.message
+      : "Couldn’t send – check your signal and tap Send again. (" + err.message + ")";
+    $("fail").classList.remove("hidden");
+    if (!dup && !badPin) $("copyRow").classList.remove("hidden");
+    btn.disabled = false; btn.textContent = "Send again";
+  }
+});
+$("copy").addEventListener("click", async () => {
+  try{ await navigator.clipboard.writeText(lastSummary); $("copy").textContent = "Copied ✓"; }
+  catch(e){ window.prompt("Copy this and text it to Gabriel:", lastSummary); }
+});
+$("another").addEventListener("click", () => {
+  locs = []; renderLocs();
+  ["start","finish","km","comments","locIn"].forEach(id => $(id).value = "");
+  $("travel").value = ""; $("lafha").checked = false; $("fuel").checked = false;
+  checkOvernight();
+  $("done").classList.add("hidden"); $("form").classList.remove("hidden"); $("bar").classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+/* ---- latest entries (so they can see it landed) ---- */
+async function loadRecent(){
+  const w = who(); if (!w || !w.url || !savedPin(w)) return;
+  try{
+    const u = w.url + (w.url.includes("?") ? "&" : "?") + "pin=" + encodeURIComponent(savedPin(w)) + "&n=5&name=" + encodeURIComponent(w.name);
+    const r = await (await fetch(u, {redirect:"follow"})).json();
+    if (!r.ok || !r.rows.length) return;
+    $("recent").innerHTML = r.rows.map(x =>
+      '<li><div>'+esc(x.day.slice(0,3))+' '+esc(x.date)+'<div class="m">'+esc(x.start)+' – '+esc(x.finish)+' · '+esc(x.project)+'</div></div><div class="h">'+esc(x.hours)+' h</div></li>').join("");
+    $("recentCard").classList.remove("hidden");
+  }catch(e){}
+}
+
+/* ---- init ---- */
+buildName(); buildRoles(); buildProject(); buildTravel();
+$("date").value = melDate(0);
+applyDefaultRole(); loadRecent();
+</script>
+</body>
+</html>
