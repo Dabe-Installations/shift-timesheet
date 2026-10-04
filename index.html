@@ -83,6 +83,28 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .done p{color:var(--muted);margin:0 0 20px}
 .hidden{display:none!important}
 .fail{background:rgba(224,52,59,.14);border:1px solid var(--bad);color:var(--text);border-radius:2px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;margin-top:14px;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.tabs button{border:0;background:var(--field);color:var(--muted);min-height:48px;font:700 17px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.tabs button[aria-selected=true]{background:var(--deep);color:#fff}
+.wk-nav{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wk-nav .ghost{min-width:52px;font-size:22px;padding:8px 14px}
+.wk-title{text-align:center}
+.wk-title .r{font:700 22px/1.1 var(--head);text-transform:uppercase;letter-spacing:.04em}
+.wk-title .t{font:700 15px/1.5 var(--head);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.day{display:grid;grid-template-columns:58px 1fr;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:2px;color:var(--text);padding:12px;margin-top:10px;font:inherit}
+.day.has{border-left-color:var(--accent)}
+.day.today{box-shadow:0 0 0 1px var(--accent) inset}
+.day .dn{font:700 22px/1 var(--head);text-transform:uppercase;letter-spacing:.06em}
+.day .dd{font-size:13px;color:var(--muted);margin-top:2px}
+.day .none{color:var(--muted);font-size:14.5px;padding-top:3px}
+.shift{padding:7px 0;border-top:1px solid var(--line);font-size:15px}
+.shift:first-child{border-top:0;padding-top:0}
+.shift:last-child{padding-bottom:0}
+.shift .top{display:flex;justify-content:space-between;gap:10px}
+.shift .m{color:var(--muted);font-size:13px;margin-top:2px}
+.shift .h{font:700 19px/1 var(--head);color:var(--accent);white-space:nowrap}
+.st{display:inline-block;margin-left:8px;padding:2px 6px;border:1px solid #4a4a48;border-radius:2px;font:700 11px/1.2 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);vertical-align:1px}
+.st.ok{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -94,7 +116,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   </header>
   <div id="banner" class="banner hidden"><b>Preview mode.</b> Nothing is sent to the sheet yet.</div>
 
-  <form id="form" novalidate autocomplete="off">
+  <div class="tabs" id="tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-t="add">Add shift</button><button type="button" role="tab" aria-selected="false" data-t="week">My week</button></div>
+<form id="form" novalidate autocomplete="off">
     <section class="card" id="who">
       <h2>You</h2>
       <div id="nameBox"></div>
@@ -161,6 +184,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     </section>
   </form>
 
+<section id="weekView" class="hidden">
+<div class="card"><div class="wk-nav"><button class="ghost" type="button" id="wkPrev" aria-label="Previous week">&#8249;</button><div class="wk-title"><div class="r" id="wkRange"></div><div class="t" id="wkTotal"></div></div><button class="ghost" type="button" id="wkNext" aria-label="Next week">&#8250;</button></div></div>
+<div class="card hidden" id="wkPin"><label for="wkPinIn" style="margin-top:0">Your PIN</label><div class="hint">The PIN Gabriel gave you. You only need to enter it once on this phone.</div><input type="password" id="wkPinIn" inputmode="numeric" autocomplete="off" placeholder="PIN"><button class="primary" type="button" id="wkPinGo" style="margin-top:12px">Show my week</button></div>
+<div class="fail hidden" id="wkErr" style="margin-top:14px"></div>
+<div id="wkDays"></div>
+</section>
+
   <section class="card hidden" id="recentCard">
     <h2>Your latest entries</h2>
     <ul class="recent" id="recent"></ul>
@@ -175,6 +205,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 </div>
 
 <div class="bar" id="bar"><div class="in"><button class="primary" id="review" type="button">Review &amp; send</button></div></div>
+
+<div class="sheet" id="daySheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
+<div class="panel">
+<h3 id="dayTitle"></h3>
+<div class="note" id="dayTotal" style="margin:0"></div>
+<div id="dayBody"></div>
+<div class="btns" style="grid-template-columns:1fr;margin-top:6px"><button class="primary" type="button" id="dayClose">Close</button></div>
+</div>
+</div>
 
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="rt">
   <div class="panel">
@@ -437,6 +476,86 @@ async function loadRecent(){
     $("recentCard").classList.remove("hidden");
   }catch(e){}
 }
+
+/* ---- tabs + my week ---- */
+let wkStart = "", wkRows = [];
+function isoD(iso){ const p = iso.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function dIso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function addDays(iso,n){ const d = isoD(iso); d.setDate(d.getDate()+n); return dIso(d); }
+function mondayOf(iso){ const d = isoD(iso); d.setDate(d.getDate()-((d.getDay()+6)%7)); return dIso(d); }
+function fmtShort(iso){ return isoD(iso).toLocaleDateString("en-AU",{day:"numeric",month:"short"}); }
+function hrs(x){ const n = parseFloat(x); return isNaN(n) ? 0 : n; }
+function stCls(s){ return /approved|paid|invoiced/i.test(s||"") ? "st ok" : "st"; }
+function stTxt(s){ return s && String(s).trim() ? String(s).trim() : "Submitted"; }
+
+function showTab(t){
+const wk = t === "week";
+document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.t === t));
+$("weekView").classList.toggle("hidden", !wk);
+$("form").classList.toggle("hidden", wk);
+$("bar").classList.toggle("hidden", wk);
+$("done").classList.add("hidden");
+if (wk){ $("recentCard").classList.add("hidden"); if (!wkStart) wkStart = mondayOf(melDate(0)); loadWeek(); }
+else if ($("recent").innerHTML){ $("recentCard").classList.remove("hidden"); }
+window.scrollTo({top:0});
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (b) showTab(b.dataset.t); });
+$("wkPrev").addEventListener("click", () => { wkStart = addDays(wkStart,-7); loadWeek(); });
+$("wkNext").addEventListener("click", () => { wkStart = addDays(wkStart,7); loadWeek(); });
+$("wkPinGo").addEventListener("click", () => { const v = $("wkPinIn").value.trim(); if (!v) return; store.set(pinKey(who()), v); $("wkPinIn").value = ""; loadWeek(); });
+
+async function loadWeek(){
+const w = who(); const from = wkStart, to = addDays(from,6);
+$("wkRange").textContent = fmtShort(from)+" – "+fmtShort(to);
+$("wkTotal").textContent = "";
+$("wkErr").classList.add("hidden");
+if (!w || !w.url){ renderWeek([]); return; }
+if (!savedPin(w)){ $("wkPin").classList.remove("hidden"); $("wkDays").innerHTML = ""; return; }
+$("wkPin").classList.add("hidden");
+$("wkDays").innerHTML = '<div class="note" style="text-align:center;margin-top:16px">Loading…</div>';
+try{
+const u = w.url + (w.url.includes("?") ? "&" : "?") + "pin=" + encodeURIComponent(savedPin(w)) + "&from=" + from + "&to=" + to;
+const r = await (await fetch(u, {redirect:"follow"})).json();
+if (from !== wkStart) return;
+if (!r.ok) throw new Error(r.error || "Something went wrong");
+renderWeek(r.rows || []);
+}catch(err){
+if (from !== wkStart) return;
+const bad = /wrong pin/i.test(err.message);
+if (bad){ try{ localStorage.removeItem("dabe_"+pinKey(w)); }catch(e){} $("wkPin").classList.remove("hidden"); }
+$("wkErr").textContent = bad ? "That PIN isn’t right. Check it with Gabriel and try again." : "Couldn’t load your week – check your signal and try again. (" + err.message + ")";
+$("wkErr").classList.remove("hidden"); $("wkDays").innerHTML = "";
+}
+}
+
+function renderWeek(rows){
+wkRows = rows; const today = melDate(0); let tot = 0, km = 0, html = "";
+for (let i=0;i<7;i++){
+const iso = addDays(wkStart,i), d = isoD(iso);
+const day = rows.filter(x => x.iso === iso);
+day.forEach(x => { tot += hrs(x.hours); km += hrs(x.km); });
+html += '<button type="button" class="day'+(day.length?' has':'')+(iso===today?' today':'')+'" data-iso="'+iso+'"><div><div class="dn">'+d.toLocaleDateString("en-AU",{weekday:"short"})+'</div><div class="dd">'+d.toLocaleDateString("en-AU",{day:"numeric",month:"short"})+'</div></div><div>'+
+(day.length ? day.map(x => '<div class="shift"><div class="top"><div>'+esc(x.start)+' – '+esc(x.finish)+'<span class="'+stCls(x.status)+'">'+esc(stTxt(x.status))+'</span></div><div class="h">'+hrs(x.hours).toFixed(2)+' h</div></div><div class="m">'+esc(x.project)+(hrs(x.km) ? ' · '+esc(hrs(x.km))+' km' : '')+'</div></div>').join("") : '<div class="none">No shift</div>')+
+'</div></button>';
+}
+$("wkDays").innerHTML = html;
+$("wkTotal").textContent = tot.toFixed(2)+" hrs"+(km ? " · "+km+" km" : "");
+}
+
+function openDay(iso){
+const day = wkRows.filter(x => x.iso === iso); let tot = 0;
+day.forEach(x => { tot += hrs(x.hours); });
+$("dayTitle").textContent = isoD(iso).toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"});
+$("dayTotal").textContent = day.length ? tot.toFixed(2)+" hrs total" : "";
+$("dayBody").innerHTML = day.length ? day.map(x => {
+const rows = [["Project",x.project],["Location(s)",x.location||"—"],["Time",x.start+" → "+x.finish],["Hours",hrs(x.hours).toFixed(2)+" h"],["KMs",hrs(x.km) ? String(hrs(x.km)) : "—"],["Status",stTxt(x.status)],["Comments",x.comments||"—"]];
+return '<div class="sum">'+rows.map(r => '<div><span>'+esc(r[0])+'</span><span>'+esc(r[1])+'</span></div>').join("")+'</div>';
+}).join("") : '<div class="note" style="margin:14px 0">No shifts logged for this day.</div>';
+$("daySheet").classList.add("open");
+}
+$("wkDays").addEventListener("click", e => { const b = e.target.closest(".day"); if (b) openDay(b.dataset.iso); });
+$("dayClose").addEventListener("click", () => $("daySheet").classList.remove("open"));
+$("daySheet").addEventListener("click", e => { if (e.target === $("daySheet")) $("daySheet").classList.remove("open"); });
 
 /* ---- init ---- */
 buildName(); buildRoles(); buildProject(); buildTravel();
