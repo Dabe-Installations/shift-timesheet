@@ -110,6 +110,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 #payPinIn{width:100%;min-height:52px;border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:2px;padding:12px 14px;font:inherit;font-size:17px}
 .paystatus{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:var(--muted);font-size:13.5px}
 .pday{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:2px;padding:12px;margin-top:10px}
+.pday{width:100%;display:block;text-align:left;color:var(--text);font:inherit;cursor:pointer}
 .pdh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
 .pdn{font:700 22px/1 var(--head);text-transform:uppercase;letter-spacing:.04em}
 .pdt{color:var(--muted);font-size:14px;margin-top:4px}
@@ -221,7 +222,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 <div class="fail hidden" id="payErr" style="margin-top:14px"></div>
 <div id="payDays"></div>
 <div class="hidden" id="payGen" style="margin-top:14px"><button class="primary" type="button" id="payGenBtn">Generate invoice</button></div>
-<div class="note" style="text-align:center;margin-top:14px">Only the rates that applied to each shift are shown. Every invoice is checked and approved by the office before payment.</div>
+<div class="note" style="text-align:center;margin-top:14px">Tap a day for its details. Only the rates that applied to each shift are shown. Every invoice is checked and approved by the office before payment.</div>
 </section>
 
 <section class="card hidden" id="recentCard">
@@ -626,7 +627,7 @@ $("daySheet").addEventListener("click", e => { if (e.target === $("daySheet")) $
 
 /* ---- my pay (only for contractors with pay:true) ---- */
 let payStart = "", payData = null;
-function updatePayTab(){ const w = who(); $("payTab").classList.toggle("hidden", !(w && w.pay)); }
+function updatePayTab(){ const w = who(), has = !!(w && w.pay); $("payTab").classList.toggle("hidden", !has); const wt = document.querySelector('#tabs [data-t="week"]'); if (wt) wt.classList.toggle("hidden", has); }
 function money(n){ return "$" + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 function nh(n){ return String(Math.round(n * 100) / 100); }
 function t12(s){ return String(s || "").replace(/^0/, ""); }
@@ -651,7 +652,7 @@ if (x.km > 0) lines += payLine("Kilometres", nh(x.km) + " km × " + money(x.kmRa
 if (x.trH > 0) lines += payLine("Travel time", nh(x.trH) + " h × " + money(x.trRate), x.trP);
 if (x.lafha > 0) lines += payLine("LAFHA", "Living away from home", x.lafha);
 if (x.fuel > 0) lines += payLine("Fuel allowance", "", x.fuel);
-return '<section class="pday"><div class="pdh"><div><div class="pdn">' + d.toLocaleDateString("en-AU",{weekday:"short"}) + ' ' + d.toLocaleDateString("en-AU",{day:"numeric",month:"short"}) + '</div><div class="pdt">' + esc(t12(x.start)) + ' – ' + esc(t12(x.finish)) + '</div></div><div class="pdv">' + money(x.total) + '</div></div>' + lines + '</section>';
+return '<button type="button" class="pday" data-iso="' + x.iso + '"><div class="pdh"><div><div class="pdn">' + d.toLocaleDateString("en-AU",{weekday:"short"}) + ' ' + d.toLocaleDateString("en-AU",{day:"numeric",month:"short"}) + '</div><div class="pdt">' + esc(t12(x.start)) + ' – ' + esc(t12(x.finish)) + '</div></div><div class="pdv">' + money(x.total) + '</div></div>' + lines + '</button>';
 }
 function renderPay(r){
 const rows = r.pay.rows; let tot = 0; rows.forEach(x => { tot += x.total; });
@@ -720,6 +721,7 @@ $("ivTotal").textContent = money(tot);
 $("ivSheet").classList.add("open");
 }
 $("payGenBtn").addEventListener("click", openInv);
+$("payDays").addEventListener("click", e => { const b = e.target.closest(".pday"); if (!b) return; wkRows = payRowsData().map(x => ({iso:x.iso, project:x.project, location:x.location, start:t12(x.start), finish:t12(x.finish), hours:x.hours, km:x.km ? String(x.km) : "", status:x.status, comments:x.comments})); openDay(b.dataset.iso); });
 $("ivEdit").addEventListener("click", () => { $("ivSheet").classList.remove("open"); openProf(); });
 $("ivClose").addEventListener("click", () => $("ivSheet").classList.remove("open"));
 function buildPdf(){
