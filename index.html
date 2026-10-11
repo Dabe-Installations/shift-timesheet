@@ -305,10 +305,10 @@ const CONFIG = {
     { name: "Leonardo Lisboa", url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER", pay: true },
     { name: "Christopher Wright-smith", url: "https://script.google.com/macros/s/AKfycbzHp0rdn1rSRWkV5OLdJG3Mv9aVPvtM3l8EmDw9rvMTuMi_YEzU5w8ZtNXBoxFG8BVNwg/exec", role: "INSTALLER", pay: true },
     { name: "Gabriel Lemos", url: "https://script.google.com/macros/s/AKfycbzUuEqhBE3WIZoLA1BWkTNHa2JybX_MX_jBBYxzC1NxO-hS5Z-Aj1ewlPadEZdJI498/exec", role: "INSTALLER", pay: true },
-    { name: "Leonardo Prado", url: "https://script.google.com/macros/s/AKfycbw9OUS86v6xJVS772qZTTwtGDt6iqjC7X0kgO9kn5bN5x3hZ5aG5DFWOnyUB2b51oAn/exec", role: "INSTALLER" },
+    { name: "Leonardo Prado", url: "https://script.google.com/macros/s/AKfycbw9OUS86v6xJVS772qZTTwtGDt6iqjC7X0kgO9kn5bN5x3hZ5aG5DFWOnyUB2b51oAn/exec", role: "INSTALLER", pay: true },
     { name: "Matheus Assis", url: "https://script.google.com/macros/s/AKfycbxQqnQ0nEPAntDY-uNxyTFnb2T9XZzWXKvDdXAKm4gZ8HkKR4aUci1ussFJzKjlzEbQ/exec", role: "INSTALLER", pay: true },
     { name: "Nathan Honorato", url: "https://script.google.com/macros/s/AKfycbzAdwPF2ZCNXNHK3974xuAWYEF04l-mZK4G43VO8uLLdnoGulmmf2Pq5Nhmg0eaggZt/exec", role: "INSTALLER", pay: true },
-      { name: "Marcos Oliveira", url: "https://script.google.com/macros/s/AKfycby5FlnzgKAcCCanAe-LLeSi8qPeWe3gTTYYGLu-FOq2cYCVNvepU55IFGNT7uxS9hl4pw/exec", role: "INSTALLER" }
+      { name: "Marcos Oliveira", url: "https://script.google.com/macros/s/AKfycby5FlnzgKAcCCanAe-LLeSi8qPeWe3gTTYYGLu-FOq2cYCVNvepU55IFGNT7uxS9hl4pw/exec", role: "INSTALLER", pay: true }
   ],
   ROLES: [
     ["LABOURER","Labourer"],["GENERAL HAND","General hand"],["INSTALLER","Installer"],
@@ -648,6 +648,7 @@ const ordLabel = dow === 6 ? "Saturday rate" : dow === 0 ? "Sunday rate" : "Day 
 let lines = "";
 if (x.ordH > 0) lines += payLine(ordLabel, nh(x.ordH) + " h × " + money(x.ordRate), x.ordP);
 if (x.otH > 0) lines += payLine("Night / overtime rate", nh(x.otH) + " h × " + money(x.otRate), x.otP);
+if (x.elH > 0) lines += payLine("Early / late rate", nh(x.elH) + " h × " + money(x.elRate), x.elP);
 if (x.km > 0) lines += payLine("Kilometres", nh(x.km) + " km × " + money(x.kmRate), x.kmP);
 if (x.trH > 0) lines += payLine("Travel time", nh(x.trH) + " h × " + money(x.trRate), x.trP);
 if (x.lafha > 0) lines += payLine("LAFHA", "Living away from home", x.lafha);
