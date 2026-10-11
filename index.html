@@ -295,15 +295,15 @@ function buildName(){
   if (contractors.length === 1){
     box.innerHTML = '<div style="font:700 30px/1 var(--head);text-transform:uppercase">Hi, '+esc(contractors[0].name.split(" ")[0])+'</div><div class="note" style="margin-top:2px">'+esc(contractors[0].name)+'</div>';
   } else {
-    box.innerHTML = '<label for="who">Your name</label><select id="who"></select><div class="err" id="e-who">Pick your name</div>';
-    const s = $("who");
+    box.innerHTML = '<label for="whoSel">Your name</label><select id="whoSel"></select><div class="err" id="e-who">Pick your name</div>';
+    const s = $("whoSel");
     s.innerHTML = '<option value="">Select your name…</option>' + contractors.map(c => '<option>'+esc(c.name)+'</option>').join("");
     const qn = new URLSearchParams(location.search).get("name") || store.get("name");
     if (qn && contractors.some(c => c.name === qn)) s.value = qn;
     s.addEventListener("change", () => { store.set("name", s.value); applyDefaultRole(); loadRecent(); });
   }
 }
-const who = () => contractors.length === 1 ? contractors[0] : contractors.find(c => c.name === ($("who")||{}).value);
+const who = () => contractors.length === 1 ? contractors[0] : contractors.find(c => c.name === ($("whoSel")||{}).value);
 
 function buildRoles(){
   $("roles").innerHTML = CONFIG.ROLES.map(([v,l]) =>
@@ -376,7 +376,7 @@ function projectValue(){
 function validate(){
   let ok = true, first = null;
   const bad = (id, cond, field) => { const e = $(id); if (!e) return; e.classList.toggle("show", cond); if (field) $(field).classList.toggle("invalid", cond); if (cond){ ok = false; if(!first) first = e; } };
-  if (contractors.length > 1) bad("e-who", !$("who").value, "who");
+  if (contractors.length > 1) bad("e-who", !$("whoSel").value, "whoSel");
   bad("e-role", !role);
   bad("e-project", !projectValue(), "project");
   if ($("locIn").value.trim()) addLoc();
