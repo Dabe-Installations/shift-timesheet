@@ -84,7 +84,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .done p{color:var(--muted);margin:0 0 20px}
 .hidden{display:none!important}
 .fail{background:rgba(224,52,59,.14);border:1px solid var(--bad);color:var(--text);border-radius:2px;padding:10px 12px;font-size:14px;margin-bottom:12px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;margin-top:14px;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-top:14px;border:1px solid var(--line);border-radius:2px;overflow:hidden}
 .tabs button{border:0;background:var(--field);color:var(--muted);min-height:48px;font:700 17px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
 .tabs button[aria-selected=true]{background:var(--deep);color:#fff}
 .wk-nav{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -106,7 +106,30 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .shift .h{font:700 19px/1 var(--head);color:var(--accent);white-space:nowrap}
 .st{display:inline-block;margin-left:8px;padding:2px 6px;border:1px solid #4a4a48;border-radius:2px;font:700 11px/1.2 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);vertical-align:1px}
 .st.ok{border-color:var(--accent);color:var(--accent)}
+
+#payPinIn{width:100%;min-height:52px;border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:2px;padding:12px 14px;font:inherit;font-size:17px}
+.paystatus{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:var(--muted);font-size:13.5px}
+.pday{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:2px;padding:12px;margin-top:10px}
+.pdh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.pdn{font:700 22px/1 var(--head);text-transform:uppercase;letter-spacing:.04em}
+.pdt{color:var(--muted);font-size:14px;margin-top:4px}
+.pdv{font:700 26px/1 var(--head);color:var(--accent);white-space:nowrap}
+.pl{display:flex;justify-content:space-between;gap:12px;padding-top:8px}
+.pl .a{min-width:0}
+.pl .a b{display:block;font-weight:600;font-size:15px}
+.pl .a span{color:var(--muted);font-size:13.5px}
+.pl .m{font:700 18px/1.2 var(--head);align-self:center;white-space:nowrap}
+.ivl{display:grid;grid-template-columns:86px 1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.ivl:first-child{border-top:0}
+.ivl span{min-width:0;overflow-wrap:anywhere}
+.ivl .n{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.ivtotal{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--text);padding:10px 0;margin-top:4px}
+.ivtotal span{font:700 15px/1 var(--head);letter-spacing:.16em;text-transform:uppercase}
+.ivtotal b{font:700 30px/1 var(--head)}
+.linkbtn{background:none;border:0;color:var(--accent);font:inherit;text-decoration:underline;padding:0}
+.ivdate{min-height:52px;display:flex;align-items:center;font-size:17px}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -117,7 +140,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   </header>
   <div id="banner" class="banner hidden"><b>Preview mode.</b> Nothing is sent to the sheet yet.</div>
 
-  <div class="tabs" id="tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-t="add">Add shift</button><button type="button" role="tab" aria-selected="false" data-t="week">My week</button></div>
+  <div class="tabs" id="tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-t="add">Add shift</button><button type="button" role="tab" aria-selected="false" data-t="week">My week</button><button type="button" role="tab" aria-selected="false" data-t="pay" id="payTab" class="hidden">My pay</button></div>
 <form id="form" novalidate autocomplete="off">
     <section class="card" id="who">
       <h2>You</h2>
@@ -192,7 +215,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 <div id="wkDays"></div>
 </section>
 
-  <section class="card hidden" id="recentCard">
+  <section id="payView" class="hidden">
+<div class="card"><div class="wk-nav"><button class="ghost" type="button" id="payPrev" aria-label="Previous week">&#8249;</button><div class="wk-title"><div class="r" id="payRange"></div><div class="t" id="payTotal"></div></div><button class="ghost" type="button" id="payNext" aria-label="Next week">&#8250;</button></div><div class="paystatus" id="payStatus"></div></div>
+<div class="card hidden" id="payPin"><label for="payPinIn" style="margin-top:0">Your PIN</label><div class="hint">The PIN Gabriel gave you. You only need to enter it once on this phone.</div><input type="password" id="payPinIn" inputmode="numeric" autocomplete="off" placeholder="PIN"><button class="primary" type="button" id="payPinGo" style="margin-top:12px">Show my pay</button></div>
+<div class="fail hidden" id="payErr" style="margin-top:14px"></div>
+<div id="payDays"></div>
+<div class="hidden" id="payGen" style="margin-top:14px"><button class="primary" type="button" id="payGenBtn">Generate invoice</button></div>
+<div class="note" style="text-align:center;margin-top:14px">Only the rates that applied to each shift are shown. Every invoice is checked and approved by the office before payment.</div>
+</section>
+
+<section class="card hidden" id="recentCard">
     <h2>Your latest entries</h2>
     <ul class="recent" id="recent"></ul>
   </section>
@@ -206,6 +238,33 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 </div>
 
 <div class="bar" id="bar"><div class="in"><button class="primary" id="review" type="button">Review &amp; send</button></div></div>
+
+<div class="sheet" id="pfSheet" role="dialog" aria-modal="true" aria-labelledby="pfT">
+<div class="panel">
+<h3 id="pfT">Your invoice details</h3>
+<div class="note" style="margin:0">Enter these once. They are saved on this phone only.</div>
+<label for="pfName">Full name</label><input type="text" id="pfName" autocomplete="off">
+<label for="pfAddr">Address</label><input type="text" id="pfAddr" placeholder="Street, suburb, state, postcode" autocomplete="off">
+<label for="pfAbn">ABN</label><input type="text" id="pfAbn" inputmode="numeric" autocomplete="off">
+<div class="row2"><div><label for="pfBsb">BSB</label><input type="text" id="pfBsb" inputmode="numeric" autocomplete="off"></div><div><label for="pfAcct">Account number</label><input type="text" id="pfAcct" inputmode="numeric" autocomplete="off"></div></div>
+<div class="err" id="pfErr">Fill in every box</div>
+<div class="btns" style="margin-top:16px"><button class="ghost" type="button" id="pfCancel">Cancel</button><button class="primary" type="button" id="pfSave">Save &amp; continue</button></div>
+</div>
+</div>
+
+<div class="sheet" id="ivSheet" role="dialog" aria-modal="true" aria-labelledby="ivT">
+<div class="panel">
+<h3 id="ivT">Your invoice</h3>
+<div class="note" id="ivNote" style="margin:0"></div>
+<div class="row2" style="margin-top:14px"><div><label for="ivNo" style="margin-top:0">Invoice no.</label><input type="text" id="ivNo" inputmode="numeric" autocomplete="off"></div><div><div class="lab" style="margin-top:0">Date</div><div class="ivdate" id="ivDate"></div></div></div>
+<div class="sum" id="ivLines"></div>
+<div class="ivtotal"><span>Total</span><b id="ivTotal"></b></div>
+<div class="note">No GST charged. <button type="button" class="linkbtn" id="ivEdit">Change my details</button></div>
+<div class="note" id="ivMsg"></div>
+<div class="btns" style="margin-top:14px"><button class="ghost" type="button" id="ivClose">Close</button><button class="primary" type="button" id="ivSave">Save PDF</button></div>
+<button class="ghost" type="button" id="ivShare" style="width:100%;margin-top:10px">Share / send</button>
+</div>
+</div>
 
 <div class="sheet" id="daySheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
 <div class="panel">
@@ -244,7 +303,7 @@ const CONFIG = {
   CONTRACTORS: [
     { name: "Leonardo Lisboa", url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER" },
     { name: "Christopher Wright-smith", url: "https://script.google.com/macros/s/AKfycbzHp0rdn1rSRWkV5OLdJG3Mv9aVPvtM3l8EmDw9rvMTuMi_YEzU5w8ZtNXBoxFG8BVNwg/exec", role: "INSTALLER" },
-    { name: "Gabriel Lemos", url: "https://script.google.com/macros/s/AKfycbzUuEqhBE3WIZoLA1BWkTNHa2JybX_MX_jBBYxzC1NxO-hS5Z-Aj1ewlPadEZdJI498/exec", role: "INSTALLER" },
+    { name: "Gabriel Lemos", url: "https://script.google.com/macros/s/AKfycbzUuEqhBE3WIZoLA1BWkTNHa2JybX_MX_jBBYxzC1NxO-hS5Z-Aj1ewlPadEZdJI498/exec", role: "INSTALLER", pay: true },
     { name: "Leonardo Prado", url: "https://script.google.com/macros/s/AKfycbw9OUS86v6xJVS772qZTTwtGDt6iqjC7X0kgO9kn5bN5x3hZ5aG5DFWOnyUB2b51oAn/exec", role: "INSTALLER" },
     { name: "Matheus Assis", url: "https://script.google.com/macros/s/AKfycbxQqnQ0nEPAntDY-uNxyTFnb2T9XZzWXKvDdXAKm4gZ8HkKR4aUci1ussFJzKjlzEbQ/exec", role: "INSTALLER" },
     { name: "Nathan Honorato", url: "https://script.google.com/macros/s/AKfycbzAdwPF2ZCNXNHK3974xuAWYEF04l-mZK4G43VO8uLLdnoGulmmf2Pq5Nhmg0eaggZt/exec", role: "INSTALLER" },
@@ -301,7 +360,7 @@ function buildName(){
     s.innerHTML = '<option value="">Select your name…</option>' + contractors.map(c => '<option>'+esc(c.name)+'</option>').join("");
     const qn = new URLSearchParams(location.search).get("name") || store.get("name");
     if (qn && contractors.some(c => c.name === qn)) s.value = qn;
-    s.addEventListener("change", () => { store.set("name", s.value); applyDefaultRole(); loadRecent(); });
+    s.addEventListener("change", () => { store.set("name", s.value); applyDefaultRole(); loadRecent(); updatePayTab(); });
   }
 }
 const who = () => contractors.length === 1 ? contractors[0] : contractors.find(c => c.name === ($("whoSel")||{}).value);
@@ -496,14 +555,15 @@ function stCls(s){ return /approved|paid|invoiced/i.test(s||"") ? "st ok" : "st"
 function stTxt(s){ return s && String(s).trim() ? String(s).trim() : "Submitted"; }
 
 function showTab(t){
-const wk = t === "week";
+const wk = t === "week", pay = t === "pay";
 document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.t === t));
-$("weekView").classList.toggle("hidden", !wk);
-$("form").classList.toggle("hidden", wk);
-$("bar").classList.toggle("hidden", wk);
+$("weekView").classList.toggle("hidden", !wk); $("payView").classList.toggle("hidden", !pay);
+$("form").classList.toggle("hidden", wk || pay);
+$("bar").classList.toggle("hidden", wk || pay);
 $("done").classList.add("hidden");
+if (pay){ $("recentCard").classList.add("hidden"); if (!payStart) payStart = mondayOf(melDate(0)); loadPay(); }
 if (wk){ $("recentCard").classList.add("hidden"); if (!wkStart) wkStart = mondayOf(melDate(0)); loadWeek(); }
-else if ($("recent").innerHTML){ $("recentCard").classList.remove("hidden"); }
+else if (!pay && $("recent").innerHTML){ $("recentCard").classList.remove("hidden"); }
 window.scrollTo({top:0});
 }
 $("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (b) showTab(b.dataset.t); });
@@ -564,10 +624,167 @@ $("wkDays").addEventListener("click", e => { const b = e.target.closest(".day");
 $("dayClose").addEventListener("click", () => $("daySheet").classList.remove("open"));
 $("daySheet").addEventListener("click", e => { if (e.target === $("daySheet")) $("daySheet").classList.remove("open"); });
 
+/* ---- my pay (only for contractors with pay:true) ---- */
+let payStart = "", payData = null;
+function updatePayTab(){ const w = who(); $("payTab").classList.toggle("hidden", !(w && w.pay)); }
+function money(n){ return "$" + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function nh(n){ return String(Math.round(n * 100) / 100); }
+function t12(s){ return String(s || "").replace(/^0/, ""); }
+function fmtDMY(iso){ const p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+function payRowsData(){ return payData && payData.pay ? payData.pay.rows : []; }
+function payStatus(rows){
+if (!rows.length) return "";
+if (rows.every(x => /paid/i.test(x.status))) return "Paid";
+if (rows.some(x => /approved|paid/i.test(x.status))) return "Approved";
+return "Pending";
+}
+function payLine(title, detail, amt){
+return '<div class="pl"><div class="a"><b>' + esc(title) + '</b>' + (detail ? '<span>' + esc(detail) + '</span>' : '') + '</div><div class="m">' + money(amt) + '</div></div>';
+}
+function payDay(x){
+const d = isoD(x.iso), dow = d.getDay();
+const ordLabel = dow === 6 ? "Saturday rate" : dow === 0 ? "Sunday rate" : "Day rate";
+let lines = "";
+if (x.ordH > 0) lines += payLine(ordLabel, nh(x.ordH) + " h × " + money(x.ordRate), x.ordP);
+if (x.otH > 0) lines += payLine("Night / overtime rate", nh(x.otH) + " h × " + money(x.otRate), x.otP);
+if (x.km > 0) lines += payLine("Kilometres", nh(x.km) + " km × " + money(x.kmRate), x.kmP);
+if (x.trH > 0) lines += payLine("Travel time", nh(x.trH) + " h × " + money(x.trRate), x.trP);
+if (x.lafha > 0) lines += payLine("LAFHA", "Living away from home", x.lafha);
+if (x.fuel > 0) lines += payLine("Fuel allowance", "", x.fuel);
+return '<section class="pday"><div class="pdh"><div><div class="pdn">' + d.toLocaleDateString("en-AU",{weekday:"short"}) + ' ' + d.toLocaleDateString("en-AU",{day:"numeric",month:"short"}) + '</div><div class="pdt">' + esc(t12(x.start)) + ' – ' + esc(t12(x.finish)) + '</div></div><div class="pdv">' + money(x.total) + '</div></div>' + lines + '</section>';
+}
+function renderPay(r){
+const rows = r.pay.rows; let tot = 0; rows.forEach(x => { tot += x.total; });
+$("payTotal").textContent = rows.length ? money(tot) + " · " + rows.length + (rows.length === 1 ? " shift" : " shifts") : "No shifts";
+const st = payStatus(rows);
+$("payStatus").innerHTML = rows.length ? '<span class="' + (st === "Pending" ? "st" : "st ok") + '" style="margin-left:0">' + st + '</span><span>Paid weekly, by Wednesday</span>' : "";
+$("payDays").innerHTML = rows.length ? rows.map(payDay).join("") : '<div class="note" style="text-align:center;margin-top:16px">No shifts logged this week.</div>';
+$("payGen").classList.toggle("hidden", !rows.length);
+}
+async function loadPay(){
+const w = who(); const from = payStart, to = addDays(from, 6);
+$("payRange").textContent = fmtShort(from) + " – " + fmtShort(to);
+$("payTotal").textContent = ""; $("payStatus").innerHTML = ""; $("payErr").classList.add("hidden"); $("payGen").classList.add("hidden");
+if (!w || !w.url || !w.pay){ $("payDays").innerHTML = ""; return; }
+if (!savedPin(w)){ $("payPin").classList.remove("hidden"); $("payDays").innerHTML = ""; return; }
+$("payPin").classList.add("hidden");
+$("payDays").innerHTML = '<div class="note" style="text-align:center;margin-top:16px">Loading…</div>';
+try{
+const u = w.url + (w.url.includes("?") ? "&" : "?") + "pin=" + encodeURIComponent(savedPin(w)) + "&pay=1&from=" + from + "&to=" + to;
+const r = await (await fetch(u, {redirect:"follow"})).json();
+if (from !== payStart) return;
+if (!r.ok) throw new Error(r.error || "Something went wrong");
+if (!r.pay) throw new Error("Pay view isn’t set up for you yet");
+payData = r; renderPay(r);
+}catch(err){
+if (from !== payStart) return;
+const bad = /wrong pin/i.test(err.message);
+if (bad){ try{ localStorage.removeItem("dabe_" + pinKey(w)); }catch(e){} $("payPin").classList.remove("hidden"); }
+$("payErr").textContent = bad ? "That PIN isn’t right. Check it with Gabriel and try again." : "Couldn’t load your pay – check your signal and try again. (" + err.message + ")";
+$("payErr").classList.remove("hidden"); $("payDays").innerHTML = "";
+}
+}
+$("payPrev").addEventListener("click", () => { payStart = addDays(payStart, -7); loadPay(); });
+$("payNext").addEventListener("click", () => { payStart = addDays(payStart, 7); loadPay(); });
+$("payPinGo").addEventListener("click", () => { const v = $("payPinIn").value.trim(); if (!v) return; store.set(pinKey(who()), v); $("payPinIn").value = ""; loadPay(); });
+
+/* ---- invoice ---- */
+const profKey = w => "prof_" + w.name;
+function getProf(w){ try{ return JSON.parse(store.get(profKey(w)) || "null"); }catch(e){ return null; } }
+function openProf(){
+const w = who(), p = getProf(w) || {};
+$("pfName").value = p.name || w.name; $("pfAddr").value = p.addr || ""; $("pfAbn").value = p.abn || ""; $("pfBsb").value = p.bsb || ""; $("pfAcct").value = p.acct || "";
+$("pfErr").classList.remove("show"); $("pfSheet").classList.add("open");
+}
+$("pfSave").addEventListener("click", () => {
+const v = {name:$("pfName").value.trim(), addr:$("pfAddr").value.trim(), abn:$("pfAbn").value.trim(), bsb:$("pfBsb").value.trim(), acct:$("pfAcct").value.trim()};
+if (!v.name || !v.addr || !v.abn || !v.bsb || !v.acct){ $("pfErr").classList.add("show"); return; }
+store.set(profKey(who()), JSON.stringify(v));
+$("pfSheet").classList.remove("open"); openInv();
+});
+$("pfCancel").addEventListener("click", () => $("pfSheet").classList.remove("open"));
+function invNumber(rows){
+let n = 0; rows.forEach(x => { if (x.inv > n) n = x.inv; });
+if (n) return n;
+return (payData && payData.pay ? payData.pay.maxInv : 0) + 1;
+}
+function invDate(){ return fmtDMY(melDate(0)); }
+function openInv(){
+const rows = payRowsData(); if (!rows.length) return;
+if (!getProf(who())){ openProf(); return; }
+let tot = 0; rows.forEach(x => { tot += x.total; });
+$("ivNo").value = invNumber(rows); $("ivDate").textContent = invDate(); $("ivMsg").textContent = "";
+$("ivNote").textContent = "Week of " + fmtShort(payStart) + " – " + fmtShort(addDays(payStart, 6));
+$("ivLines").innerHTML = rows.map(x => '<div class="ivl"><span>' + fmtDMY(x.iso) + '</span><span>' + esc(x.location) + '</span><span class="n">' + money(x.total) + '</span></div>').join("");
+$("ivTotal").textContent = money(tot);
+$("ivSheet").classList.add("open");
+}
+$("payGenBtn").addEventListener("click", openInv);
+$("ivEdit").addEventListener("click", () => { $("ivSheet").classList.remove("open"); openProf(); });
+$("ivClose").addEventListener("click", () => $("ivSheet").classList.remove("open"));
+function buildPdf(){
+const J = window.jspdf && window.jspdf.jsPDF; if (!J) return null;
+const w = who(), p = getProf(w) || {}, rows = payRowsData();
+const doc = new J({unit:"mm", format:"a4"});
+const L = 18, R = 192; let y = 24;
+doc.setFont("helvetica","bold"); doc.setFontSize(26); doc.setTextColor(31,105,92); doc.text("INVOICE", L, y);
+doc.setFontSize(10); doc.setTextColor(90,100,96); doc.setFont("helvetica","normal");
+doc.text("Invoice no. " + $("ivNo").value.trim(), R, y - 8, {align:"right"});
+doc.text("Date " + invDate(), R, y - 2, {align:"right"});
+y += 5; doc.setDrawColor(31,105,92); doc.setLineWidth(0.6); doc.line(L, y, R, y);
+y += 10;
+doc.setFontSize(8); doc.setTextColor(106,120,115); doc.setFont("helvetica","bold");
+doc.text("FROM", L, y); doc.text("BILL TO", 110, y);
+y += 6; doc.setFontSize(10.5); doc.setTextColor(27,31,29);
+doc.text(p.name || w.name, L, y); doc.text("DABE LABOUR PTY LTD", 110, y);
+doc.setFont("helvetica","normal");
+const addr = doc.splitTextToSize(p.addr || "", 80);
+doc.text(addr, L, y + 5);
+doc.text("ABN " + (p.abn || ""), L, y + 5 + addr.length * 5);
+doc.text("ABN 96 668 137 693", 110, y + 5);
+doc.text("30 Airlie Grove, Seaford VIC 3198", 110, y + 10);
+y += 5 + Math.max(addr.length * 5 + 5, 15) + 8;
+doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(106,120,115);
+doc.text("DATE", L, y); doc.text("JOB", L + 32, y); doc.text("TOTAL", R, y, {align:"right"});
+y += 2; doc.setDrawColor(200,208,205); doc.setLineWidth(0.3); doc.line(L, y, R, y);
+doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(27,31,29);
+let tot = 0;
+rows.forEach(x => {
+y += 7; if (y > 262){ doc.addPage(); y = 24; }
+doc.text(fmtDMY(x.iso), L, y); doc.text(String(x.location || "").slice(0, 60), L + 32, y); doc.text(money(x.total), R, y, {align:"right"});
+doc.setDrawColor(227,232,230); doc.line(L, y + 2.5, R, y + 2.5); tot += x.total;
+});
+y += 11; doc.setDrawColor(27,31,29); doc.setLineWidth(0.6); doc.line(L, y - 6, R, y - 6);
+doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.text("TOTAL", L, y); doc.setFontSize(15); doc.text(money(tot), R, y, {align:"right"});
+y += 14; if (y > 255){ doc.addPage(); y = 24; }
+doc.setFontSize(8); doc.setTextColor(106,120,115); doc.text("PAY TO", L, y);
+doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(27,31,29);
+doc.text("BSB " + (p.bsb || "") + "   Account " + (p.acct || ""), L, y + 6);
+doc.text("No GST charged.", L, y + 12);
+return doc;
+}
+function pdfName(){ return "Invoice " + $("ivNo").value.trim() + " - " + ((getProf(who()) || {}).name || who().name) + ".pdf"; }
+function pdfReady(){
+if (!$("ivNo").value.trim()){ $("ivMsg").textContent = "Add an invoice number first."; return null; }
+const d = buildPdf();
+if (!d) $("ivMsg").textContent = "Couldn’t make the PDF – check your signal and try again.";
+return d;
+}
+$("ivSave").addEventListener("click", () => { const d = pdfReady(); if (d){ d.save(pdfName()); $("ivMsg").textContent = "Saved."; } });
+$("ivShare").addEventListener("click", async () => {
+const d = pdfReady(); if (!d) return;
+const name = pdfName();
+try{
+const file = new File([d.output("blob")], name, {type:"application/pdf"});
+if (navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file], title:name});
+else { d.save(name); $("ivMsg").textContent = "Saved."; }
+}catch(e){ if (!e || e.name !== "AbortError") d.save(name); }
+});
+
 /* ---- init ---- */
 buildName(); buildRoles(); buildProject(); buildTravel();
 $("date").value = melDate(0);
-applyDefaultRole(); loadRecent();
+applyDefaultRole(); loadRecent(); updatePayTab();
 </script>
 </body>
 </html>
