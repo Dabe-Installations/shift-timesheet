@@ -302,12 +302,12 @@ const CONFIG = {
   // One entry per contractor. url = the "Web app URL" from that contractor's sheet.
   // Leave url empty to run in preview mode. If everyone shares one sheet, use the same url for all.
   CONTRACTORS: [
-    { name: "Leonardo Lisboa", url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER", pay: true },
+    { name: "Leonardo Lisboa", url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER", pay: true, invNext: 61 },
     { name: "Christopher Wright-smith", url: "https://script.google.com/macros/s/AKfycbzHp0rdn1rSRWkV5OLdJG3Mv9aVPvtM3l8EmDw9rvMTuMi_YEzU5w8ZtNXBoxFG8BVNwg/exec", role: "INSTALLER", pay: true },
     { name: "Gabriel Lemos", url: "https://script.google.com/macros/s/AKfycbzUuEqhBE3WIZoLA1BWkTNHa2JybX_MX_jBBYxzC1NxO-hS5Z-Aj1ewlPadEZdJI498/exec", role: "INSTALLER", pay: true },
     { name: "Leonardo Prado", url: "https://script.google.com/macros/s/AKfycbw9OUS86v6xJVS772qZTTwtGDt6iqjC7X0kgO9kn5bN5x3hZ5aG5DFWOnyUB2b51oAn/exec", role: "INSTALLER", pay: true },
-    { name: "Matheus Assis", url: "https://script.google.com/macros/s/AKfycbxQqnQ0nEPAntDY-uNxyTFnb2T9XZzWXKvDdXAKm4gZ8HkKR4aUci1ussFJzKjlzEbQ/exec", role: "INSTALLER", pay: true },
-    { name: "Nathan Honorato", url: "https://script.google.com/macros/s/AKfycbzAdwPF2ZCNXNHK3974xuAWYEF04l-mZK4G43VO8uLLdnoGulmmf2Pq5Nhmg0eaggZt/exec", role: "INSTALLER", pay: true },
+    { name: "Matheus Assis", url: "https://script.google.com/macros/s/AKfycbxQqnQ0nEPAntDY-uNxyTFnb2T9XZzWXKvDdXAKm4gZ8HkKR4aUci1ussFJzKjlzEbQ/exec", role: "INSTALLER", pay: true, invNext: 28 },
+    { name: "Nathan Honorato", url: "https://script.google.com/macros/s/AKfycbzAdwPF2ZCNXNHK3974xuAWYEF04l-mZK4G43VO8uLLdnoGulmmf2Pq5Nhmg0eaggZt/exec", role: "INSTALLER", pay: true, invNext: 13 },
       { name: "Marcos Oliveira", url: "https://script.google.com/macros/s/AKfycby5FlnzgKAcCCanAe-LLeSi8qPeWe3gTTYYGLu-FOq2cYCVNvepU55IFGNT7uxS9hl4pw/exec", role: "INSTALLER", pay: true }
   ],
   ROLES: [
@@ -708,8 +708,15 @@ $("pfCancel").addEventListener("click", () => $("pfSheet").classList.remove("ope
 function invNumber(rows){
 let n = 0; rows.forEach(x => { if (x.inv > n) n = x.inv; });
 if (n) return n;
-return (payData && payData.pay ? payData.pay.maxInv : 0) + 1;
+var base = (payData && payData.pay ? payData.pay.maxInv : 0) + 1;
+var st = invStore(), wk = invWeekKey();
+if (st.weeks[wk]) return st.weeks[wk];
+return Math.max(base, who().invNext || 0, st.last ? st.last + 1 : 0);
 }
+function invKey() { return "dabe_invno_" + who().name; }
+function invStore() { try { var s = JSON.parse(localStorage.getItem(invKey()) || "{}"); return { last: s.last || 0, weeks: s.weeks || {} }; } catch (e) { return { last: 0, weeks: {} }; } }
+function invWeekKey() { return String(payStart && payStart.getTime ? payStart.getTime() : payStart); }
+function invRecord() { try { var n = parseInt($("ivNo").value, 10); if (!n) return; var st = invStore(); st.weeks[invWeekKey()] = n; if (n > st.last) st.last = n; localStorage.setItem(invKey(), JSON.stringify(st)); } catch (e) {} }
 function invDate(){ return fmtDMY(melDate(0)); }
 function openInv(){
 const rows = payRowsData(); if (!rows.length) return;
@@ -766,7 +773,7 @@ doc.text("BSB " + (p.bsb || "") + "   Account " + (p.acct || ""), L, y + 6);
 doc.text("No GST charged.", L, y + 12);
 return doc;
 }
-function pdfName(){ return "Invoice " + $("ivNo").value.trim() + " - " + ((getProf(who()) || {}).name || who().name) + ".pdf"; }
+function pdfName(){ invRecord(); return "Invoice " + $("ivNo").value.trim() + " - " + ((getProf(who()) || {}).name || who().name) + ".pdf"; }
 function pdfReady(){
 if (!$("ivNo").value.trim()){ $("ivMsg").textContent = "Add an invoice number first."; return null; }
 const d = buildPdf();
