@@ -309,7 +309,7 @@ const CONFIG = {
     { name: "Matheus Assis", url: "https://script.google.com/macros/s/AKfycbxQqnQ0nEPAntDY-uNxyTFnb2T9XZzWXKvDdXAKm4gZ8HkKR4aUci1ussFJzKjlzEbQ/exec", role: "INSTALLER", pay: true, invNext: 28 },
     { name: "Nathan Honorato", url: "https://script.google.com/macros/s/AKfycbzAdwPF2ZCNXNHK3974xuAWYEF04l-mZK4G43VO8uLLdnoGulmmf2Pq5Nhmg0eaggZt/exec", role: "INSTALLER", pay: true, invNext: 13 },
       { name: "Marcos Oliveira", url: "https://script.google.com/macros/s/AKfycby5FlnzgKAcCCanAe-LLeSi8qPeWe3gTTYYGLu-FOq2cYCVNvepU55IFGNT7uxS9hl4pw/exec", role: "INSTALLER", pay: true },
-    { name: "Rodolfo Campos", url: "https://script.google.com/macros/s/AKfycbwKj1b425t67NEk-nCXUgLW5QNTjRngXeyulmpICnKhSsUIE6rAwbfqIJ7eLUPLn35a/exec", role: "INSTALLER", pay: true }
+    { name: "Rodolfo Campos", url: "https://script.google.com/macros/s/AKfycbwKj1b425t67NEk-nCXUgLW5QNTjRngXeyulmpICnKhSsUIE6rAwbfqIJ7eLUPLn35a/exec", role: "INSTALLER", pay: true, single: { project: "ALDI - MAINTENANCE", amount: 182 } }
   ],
   ROLES: [
     ["LABOURER","Labourer"],["GENERAL HAND","General hand"],["INSTALLER","Installer"],
@@ -389,9 +389,9 @@ function applyDefaultRole(){
 function buildProject(){
   $("project").innerHTML = '<option value="">Select project…</option>' +
     CONFIG.PROJECTS.map(p => '<option>'+esc(p)+'</option>').join("") + '<option value="__other">Other…</option>';
-  const last = store.get("project"); if (last && CONFIG.PROJECTS.includes(last)) $("project").value = last;
+  const last = store.get("project"); if (last && CONFIG.PROJECTS.includes(last)) $("project").value = last; applySingle();
   $("project").addEventListener("change", () => {
-    $("projectOther").classList.toggle("hidden", $("project").value !== "__other");
+    $("projectOther").classList.toggle("hidden", $("project").value !== "__other"); applySingle();
     if ($("project").value === "__other") $("projectOther").focus();
     $("e-project").classList.remove("show");
   });
@@ -435,16 +435,28 @@ function projectValue(){
   const p = $("project").value;
   return p === "__other" ? $("projectOther").value.trim() : p;
 }
+function singleMode() { var w = who(); return !!(w && w.single && projectValue() === w.single.project); }
+function applySingle() {
+  try {
+    var on = singleMode(), r = $("start").closest(".row2");
+    if (r) r.classList.toggle("hidden", on);
+    if (on) $("e-time").classList.remove("show");
+    var n = $("singleNote");
+    if (!n) { n = document.createElement("div"); n.className = "note"; n.id = "singleNote"; $("projectOther").insertAdjacentElement("afterend", n); }
+    n.classList.toggle("hidden", !on);
+    if (on) n.textContent = "Single charge: " + money(who().single.amount) + " per store. Add each store as a location - one charge per store.";
+  } catch (e) {}
+}
 function validate(){
   let ok = true, first = null;
   const bad = (id, cond, field) => { const e = $(id); if (!e) return; e.classList.toggle("show", cond); if (field) $(field).classList.toggle("invalid", cond); if (cond){ ok = false; if(!first) first = e; } };
   if (contractors.length > 1) bad("e-who", !$("whoSel").value, "whoSel");
-  bad("e-role", !role);
+  bad("e-role", !role && !singleMode());
   bad("e-project", !projectValue(), "project");
   if ($("locIn").value.trim()) addLoc();
   bad("e-loc", locs.length === 0);
   bad("e-date", !$("date").value, "date");
-  bad("e-time", !$("start").value || !$("finish").value || $("start").value === $("finish").value);
+  bad("e-time", !singleMode() && (!$("start").value || !$("finish").value || $("start").value === $("finish").value));
   if (first) first.scrollIntoView({behavior:"smooth", block:"center"});
   return ok;
 }
@@ -460,9 +472,9 @@ function payload(){
 function summaryRows(p){
   const roleLabel = (CONFIG.ROLES.find(r => r[0] === p.role)||[0,p.role])[1];
   return [
-    ["Name", p.name], ["Role", roleLabel], ["Project", p.project], ["Location(s)", p.location],
+    ["Name", p.name], ["Role", roleLabel || "-"], ["Project", p.project], ["Location(s)", p.location],
     ["Date", fmtDate(p.date)],
-    ["Time", fmt12(p.start)+" → "+fmt12(p.finish)+(p.finish < p.start ? " (next day)" : "")],
+    singleMode() ? ["Single charge", money(who().single.amount) + " per store x " + locs.length] : ["Time", fmt12(p.start)+" → "+fmt12(p.finish)+(p.finish < p.start ? " (next day)" : "")],
     ["KMs", p.km || "—"], ["Travel time", p.travel ? p.travel+" hrs" : "—"],
     ["LAFHA", p.lafha ? "Yes" : "No"], ["Fuel allowance", p.fuel ? "Yes" : "No"],
     ["Comments", p.comments || "—"]
@@ -487,7 +499,8 @@ $("sheet").addEventListener("click", e => { if (e.target === $("sheet")) $("shee
 async function send(){
   const p = payload(); const w = who();
   if (!w.url){ await new Promise(r => setTimeout(r, 700)); return {ok:true, preview:true}; }
-  const res = await fetch(w.url, { method:"POST", body: JSON.stringify(p), redirect:"follow" });
+  if (singleMode()) { for (var i = 0; i < locs.length; i++) { var pp = Object.assign({}, p, { location: locs[i], single: w.single.amount }); var rs = await (await fetch(w.url, { method: "POST", body: JSON.stringify(pp), redirect: "follow" })).json(); if (!rs.ok) return rs; } return { ok: true }; }
+const res = await fetch(w.url, { method:"POST", body: JSON.stringify(p), redirect:"follow" });
   return await res.json();
 }
 $("send").addEventListener("click", async () => {
@@ -526,7 +539,7 @@ $("copy").addEventListener("click", async () => {
 $("another").addEventListener("click", () => {
   locs = []; renderLocs();
   ["start","finish","km","comments","locIn"].forEach(id => $(id).value = "");
-  $("travel").value = ""; $("lafha").checked = false; $("fuel").checked = false;
+  $("travel").value = ""; $("lafha").checked = false; $("fuel").checked = false; applySingle();
   checkOvernight();
   $("done").classList.add("hidden"); $("form").classList.remove("hidden"); $("bar").classList.remove("hidden");
   window.scrollTo({top:0,behavior:"smooth"});
@@ -649,7 +662,8 @@ const ordLabel = dow === 6 ? "Saturday rate" : dow === 0 ? "Sunday rate" : "Day 
 let lines = "";
 if (x.ordH > 0) lines += payLine(ordLabel, nh(x.ordH) + " h × " + money(x.ordRate), x.ordP);
 if (x.otH > 0) lines += payLine("Night / overtime rate", nh(x.otH) + " h × " + money(x.otRate), x.otP);
-if (x.elH > 0) lines += payLine("Early / late rate", nh(x.elH) + " h × " + money(x.elRate), x.elP);
+if (x.single > 0) lines += payLine("Single charge", "1 store", x.single);
+  if (x.elH > 0) lines += payLine("Early / late rate", nh(x.elH) + " h × " + money(x.elRate), x.elP);
 if (x.km > 0) lines += payLine("Kilometres", nh(x.km) + " km × " + money(x.kmRate), x.kmP);
 if (x.trH > 0) lines += payLine("Travel time", nh(x.trH) + " h × " + money(x.trRate), x.trP);
 if (x.lafha > 0) lines += payLine("LAFHA", "Living away from home", x.lafha);
