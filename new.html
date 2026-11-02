@@ -435,7 +435,12 @@ function buildName(){
     const s = $("whoSel");
     s.innerHTML = '<option value="">Select your name…</option>' + contractors.map(c => '<option>'+esc(c.name)+'</option>').join("");
     const qn = new URLSearchParams(location.search).get("name") || store.get("name");
-    if (qn && contractors.some(c => c.name === qn)) s.value = qn;
+    if (qn && contractors.some(c => c.name === qn)){
+      s.value = qn;
+      box.innerHTML = '<div class="lab">Your name</div><div style="font:700 20px/1.2 var(--head);margin-top:2px">'+esc(qn)+'</div><input type="hidden" id="whoSel" value="'+esc(qn)+'"><div class="err" id="e-who">Pick your name</div>';
+      store.set("name", qn);
+      return;
+    }
     s.addEventListener("change", () => { store.set("name", s.value); applyDefaultRole(); loadRecent(); updatePayTab(); });
   }
 }
