@@ -161,13 +161,22 @@ body{padding-bottom:0}
 .panel{border-top:0;border-radius:26px 26px 0 0}
 .tick{border-radius:50%;border:0}
 .day,.pday{border:0;border-left:0;border-radius:16px;box-shadow:0 1px 2px rgba(17,26,23,.05),0 6px 18px rgba(17,26,23,.05)}
-.day.has,.pday{box-shadow:inset 4px 0 0 var(--accent),0 6px 18px rgba(17,26,23,.05)}
+.day.has,.pday{box-shadow:0 1px 2px rgba(17,26,23,.05),0 6px 18px rgba(17,26,23,.05)}
 .day.today{box-shadow:inset 0 0 0 2px var(--accent)}
 .st{border:1px solid #c9d3cf;border-radius:99px;padding:2px 8px}
 .st.ok{border-color:var(--accent);background:var(--accent-soft)}
 .banner{border-radius:14px}
 .fail{border-radius:14px}
 .ivtotal{border-top-color:var(--accent)}
+.ptot{background:#fff;border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 1px 2px rgba(17,26,23,.05),0 8px 24px rgba(17,26,23,.05)}
+.ptot h3{margin:0 0 6px;font:700 21px/1 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.tl{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
+.tl:first-of-type{border-top:0}
+.tl .q{color:var(--muted);font-size:14px;text-align:right;white-space:nowrap}
+.tl b{min-width:84px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.tl2{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--accent);margin-top:6px;padding-top:12px}
+.tl2 span{font:700 18px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.tl2 b{font:700 32px/1 var(--head);color:var(--accent)}
 .ltime{border:1.5px solid var(--line);border-radius:16px;padding:12px 14px 14px;margin-top:12px;background:#fff}
 .ltn{display:flex;align-items:center;gap:10px;font:700 19px/1.1 var(--head);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
 .ltn b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px}
@@ -862,12 +871,36 @@ if (x.lafha > 0) lines += payLine("LAFHA", "Living away from home", x.lafha);
 if (x.fuel > 0) lines += payLine("Fuel allowance", "", x.fuel);
 return '<button type="button" class="pday" data-iso="' + x.iso + '"><div class="pdh"><div><div class="pdn">' + d.toLocaleDateString("en-AU",{weekday:"short"}) + ' ' + d.toLocaleDateString("en-AU",{day:"numeric",month:"short"}) + '</div><div class="pdt">' + esc(t12(x.start)) + ' – ' + esc(t12(x.finish)) + '</div></div><div class="pdv">' + money(x.total) + '</div></div>' + lines + '</button>';
 }
+
+function payTotals(rows){
+  var s = {ord:0,ordP:0,ot:0,otP:0,el:0,elP:0,tr:0,trP:0,km:0,kmP:0,single:0,lafha:0,fuel:0,total:0};
+  rows.forEach(function(x){
+    s.ord += +x.ordH||0; s.ordP += +x.ordP||0; s.ot += +x.otH||0; s.otP += +x.otP||0;
+    s.el += +x.elH||0; s.elP += +x.elP||0; s.tr += +x.trH||0; s.trP += +x.trP||0;
+    s.km += +x.km||0; s.kmP += +x.kmP||0; s.single += +x.single||0; s.lafha += +x.lafha||0; s.fuel += +x.fuel||0; s.total += +x.total||0;
+  });
+  var L = [];
+  if (s.ord > 0) L.push(["Normal hours", nh(s.ord) + " h", s.ordP]);
+  if (s.ot > 0) L.push(["Overtime / night hours", nh(s.ot) + " h", s.otP]);
+  if (s.el > 0) L.push(["Early / late hours", nh(s.el) + " h", s.elP]);
+  if (s.tr > 0) L.push(["Travel time", nh(s.tr) + " h", s.trP]);
+  if (s.km > 0) L.push(["Kilometres", nh(s.km) + " km", s.kmP]);
+  if (s.single > 0) L.push(["Single charge", "", s.single]);
+  if (s.lafha > 0) L.push(["LAFHA", "", s.lafha]);
+  if (s.fuel > 0) L.push(["Fuel allowance", "", s.fuel]);
+  var listed = L.reduce(function(a,r){ return a + r[2]; }, 0);
+  if (Math.abs(s.total - listed) > 0.01) L.push(["Other", "", s.total - listed]);
+  return '<div class="ptot"><h3>Week totals</h3>' + L.map(function(r){
+    return '<div class="tl"><span>' + r[0] + '</span><span class="q">' + r[1] + '</span><b>' + money(r[2]) + '</b></div>';
+  }).join("") + '<div class="tl2"><span>Week total</span><b>' + money(s.total) + '</b></div></div>';
+}
+
 function renderPay(r){
 const rows = r.pay.rows; let tot = 0; rows.forEach(x => { tot += x.total; });
 $("payTotal").textContent = rows.length ? money(tot) + " · " + rows.length + (rows.length === 1 ? " shift" : " shifts") : "No shifts";
 const st = payStatus(rows);
 $("payStatus").innerHTML = rows.length ? '<span class="' + (st === "Pending" ? "st" : "st ok") + '" style="margin-left:0">' + st + '</span><span>Paid weekly, by Wednesday</span>' : "";
-$("payDays").innerHTML = rows.length ? rows.map(payDay).join("") : '<div class="note" style="text-align:center;margin-top:16px">No shifts logged this week.</div>';
+$("payDays").innerHTML = rows.length ? rows.map(payDay).join("") + payTotals(rows) : '<div class="note" style="text-align:center;margin-top:16px">No shifts logged this week.</div>';
 $("payGen").classList.toggle("hidden", !rows.length);
 }
 async function loadPay(){
