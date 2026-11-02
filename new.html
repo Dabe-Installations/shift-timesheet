@@ -702,8 +702,22 @@ $("edit").addEventListener("click", () => $("sheet").classList.remove("open"));
 $("sheet").addEventListener("click", e => { if (e.target === $("sheet")) $("sheet").classList.remove("open"); });
 
 /* ---- send ---- */
+const RECEIPT_MAILER = "https://script.google.com/macros/s/AKfycbzlTuCuRy5GEADcqHBbi81hblab_kXtmozqsYhrO4bog6Bj1_mGrT-OvnPUB1JgriB42Q/exec";
+const RECEIPT_TOKEN = "dabe-rcpt-7f3a91c2";
+async function mailReceipts(p, w){
+  try{
+    const r = await fetch(RECEIPT_MAILER, { method:"POST", body: JSON.stringify({ token: RECEIPT_TOKEN, name: w.name, date: p.date, dateNice: fmtDate(p.date), location: locs.join(" / "), project: p.project, receipts: p.receipts }), redirect:"follow" });
+    const j = await r.json(); return !!j.ok;
+  }catch(e){ return false; }
+}
 async function send(){
   const p = payload(); const w = who();
+  if (w.url && p.receipts && p.receipts.length){
+    const okMail = await mailReceipts(p, w);
+    if (!okMail) return { ok:false, error:"Couldn't send your receipts. Check your signal and try again." };
+    p.comments = [p.comments, "Receipts emailed: " + p.receipts.map(function(r){ return r.store + " $" + r.amount.toFixed(2); }).join("; ")].filter(Boolean).join("\n");
+  }
+  delete p.receipts;
   if (!w.url){ await new Promise(r => setTimeout(r, 700)); return {ok:true, preview:true}; }
   if (singleMode()) { for (var i = 0; i < locs.length; i++) { var pp = Object.assign({}, p, { location: locs[i], single: w.single.amount }); var rs = await (await fetch(w.url, { method: "POST", body: JSON.stringify(pp), redirect: "follow" })).json(); if (!rs.ok) return rs; } return { ok: true }; }
 const res = await fetch(w.url, { method:"POST", body: JSON.stringify(p), redirect:"follow" });
