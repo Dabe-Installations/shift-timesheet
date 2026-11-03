@@ -183,6 +183,7 @@ body{padding-bottom:0}
 .ltime label{margin-top:0}
 .card h2{font-size:21px;font-weight:700;letter-spacing:.12em;margin:0 0 16px;-webkit-text-stroke:.4px currentColor}
 .bar .in{max-width:528px}
+.rateline{font-size:14px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--line);line-height:1.5}.rateline b{color:var(--text)}
 .rclink{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
 .rcard{border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-top:12px;background:#fff}
 .rcard label{margin-top:12px}.rcard .hint{margin:0 0 6px}
@@ -216,6 +217,7 @@ body{padding-bottom:0}
       <div class="lab" style="margin-top:14px">Your role</div>
       <div class="chips" id="roles" role="radiogroup" aria-label="Role"></div>
       <div class="err" id="e-role">Pick your role</div>
+      <div class="rateline" id="rateLine"></div>
     </section>
 
     <section class="card">
@@ -374,7 +376,7 @@ const CONFIG = {
   // One entry per contractor. url = the "Web app URL" from that contractor's sheet.
   // Leave url empty to run in preview mode. If everyone shares one sheet, use the same url for all.
   CONTRACTORS: [
-    { name: "Leonardo Lisboa", url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER", pay: true, invNext: 61 },
+    { name: "Leonardo Lisboa", rates: { "INSTALLER": [45, 65] }, url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER", pay: true, invNext: 61 },
     { name: "Christopher Wright-smith", url: "https://script.google.com/macros/s/AKfycbzHp0rdn1rSRWkV5OLdJG3Mv9aVPvtM3l8EmDw9rvMTuMi_YEzU5w8ZtNXBoxFG8BVNwg/exec", role: "INSTALLER", pay: true },
     { name: "Gabriel Lemos", url: "https://script.google.com/macros/s/AKfycbzUuEqhBE3WIZoLA1BWkTNHa2JybX_MX_jBBYxzC1NxO-hS5Z-Aj1ewlPadEZdJI498/exec", role: "INSTALLER", pay: true },
     { name: "Leonardo Prado", url: "https://script.google.com/macros/s/AKfycbw9OUS86v6xJVS772qZTTwtGDt6iqjC7X0kgO9kn5bN5x3hZ5aG5DFWOnyUB2b51oAn/exec", role: "INSTALLER", pay: true },
@@ -383,6 +385,8 @@ const CONFIG = {
       { name: "Marcos Oliveira", url: "https://script.google.com/macros/s/AKfycby5FlnzgKAcCCanAe-LLeSi8qPeWe3gTTYYGLu-FOq2cYCVNvepU55IFGNT7uxS9hl4pw/exec", role: "INSTALLER", pay: true },
     { name: "Rodolfo Campos", url: "https://script.google.com/macros/s/AKfycbwKj1b425t67NEk-nCXUgLW5QNTjRngXeyulmpICnKhSsUIE6rAwbfqIJ7eLUPLn35a/exec", role: "INSTALLER", pay: true, single: { project: "ALDI - MAINTENANCE", amount: 182 } }
   ],
+  /* Day / night $ per hour for each role (from the contractor rate card) */
+  RATES: { "LABOURER": [38, 50], "GENERAL HAND": [40, 52], "INSTALLER": [45, 57], "LEAD INSTALLER": [50, 62] },
   ROLES: [
     ["LABOURER","Labourer"],["GENERAL HAND","General hand"],["INSTALLER","Installer"],["LEAD INSTALLER","Lead installer"]
   ],
@@ -455,6 +459,17 @@ function setRole(v){
   role = v;
   document.querySelectorAll("#roles .chip").forEach(b => b.setAttribute("aria-checked", b.dataset.v === v));
   $("e-role").classList.remove("show");
+  showRate();
+}
+function showRate(){
+  const el = $("rateLine"); if (!el) return;
+  const link = '<a class="rclink" href="https://drive.google.com/file/d/1i2i6bStV91_ThjKRkxAWFXG224EHEGvk/view" target="_blank" rel="noopener">See the full rate card &rarr;</a>';
+  const w = who(), own = (w && w.rates) || {};
+  const r = own[role] || CONFIG.RATES[role];
+  const lab = (CONFIG.ROLES.find(x => x[0] === role) || [0, ""])[1];
+  el.innerHTML = r
+    ? esc(lab) + ': <b>$' + r[0] + '/hr</b> day &middot; <b>$' + r[1] + '/hr</b> night<br>' + link
+    : 'Not sure which role is yours? ' + link;
 }
 function applyDefaultRole(){
   const saved = store.get("role"); const w = who();
@@ -1050,7 +1065,7 @@ else { d.save(name); $("ivMsg").textContent = "Saved."; }
 /* ---- init ---- */
 buildName(); buildRoles(); buildProject(); buildTravel();
 $("date").value = melDate(0);
-applyDefaultRole(); loadRecent(); updatePayTab();
+applyDefaultRole(); showRate(); loadRecent(); updatePayTab();
 </script>
 <script>
 (function(){function nm(){try{var n=new URLSearchParams(location.search).get("name")||"";return n.trim().split(/\s+/)[0]}catch(e){return ""}}
