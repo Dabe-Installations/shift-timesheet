@@ -2,7 +2,6 @@
   "name": "Dabe Timesheet",
   "short_name": "Timesheet",
   "description": "Dabe shift timesheet",
-  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
