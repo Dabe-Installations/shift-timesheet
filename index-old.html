@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Dabe Shift Timesheet</title>
+  <link rel="apple-touch-icon" href="https://runs.dabelabour.com.au/apple-touch-icon.png"><link rel="icon" href="https://runs.dabelabour.com.au/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Dabe Timesheet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f4f2; --card:#ffffff; --text:#111a17; --muted:#6a7772; --line:#e3e9e6;
+  --accent:#1a6b5a; --deep:#1a6b5a; --deep2:#14564a; --accent-ink:#fff; --accent-soft:#e2efec; --ok:#1a6b5a; --bad:#c62828; --field:#f4f7f5;
+  --head:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 "Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+header{padding:calc(20px + env(safe-area-inset-top)) 0 14px;border-bottom:1px solid var(--line)}
+.eyebrow{font:700 12px/1 var(--head);letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+header h1{font:700 40px/.95 var(--head);text-transform:uppercase;margin:0;letter-spacing:.005em}
+header p{margin:8px 0 0;color:var(--muted);font-size:14.5px}
+.banner{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--text);padding:10px 12px;border-radius:2px;font-size:13.5px;margin:14px 0 0}
+.card{background:var(--card);border:1px solid var(--line);border-top:2px solid var(--deep);border-radius:2px;padding:16px;margin-top:14px}
+.card h2{font:700 14px/1 var(--head);letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+label,.lab{display:block;font:700 15px/1.1 var(--head);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 7px}
+label:first-of-type,.card h2+label,.card h2+.lab{margin-top:0}
+.hint{font-weight:400;color:var(--muted);font-size:13px;margin:-2px 0 8px;font-family:"Barlow",sans-serif;letter-spacing:0;text-transform:none}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%;min-height:52px;border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:2px;padding:12px 14px;font:inherit;font-size:17px;appearance:none;-webkit-appearance:none;
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%231a6b5a' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+textarea{min-height:84px;resize:vertical}
+input::placeholder,textarea::placeholder{color:#5d5d5b}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.invalid{border-color:var(--bad)!important}
+.err{color:#ff6b70;font-size:13px;margin-top:6px;display:none}
+.err.show{display:block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:2px;padding:10px 16px;font:700 17px/1 var(--head);letter-spacing:.08em;text-transform:uppercase;min-height:46px}
+.chip[aria-checked=true]{background:var(--deep);border-color:var(--accent);color:#fff}
+.quick{display:flex;gap:8px;margin-top:8px}
+.quick button,.ghost{border:1px solid #4a4a48;background:transparent;color:var(--text);border-radius:2px;padding:10px 16px;font:700 15px/1 var(--head);letter-spacing:.12em;text-transform:uppercase;min-height:44px}
+.loc{display:flex;gap:8px}
+.loc button{flex:none;min-width:84px;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:2px;font:700 16px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.locs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.locs .tag{display:flex;align-items:center;gap:8px;background:var(--deep);border:1px solid var(--accent);border-radius:2px;padding:6px 6px 6px 8px;font-weight:600;font-size:15.5px}
+.locs .tag b{min-width:22px;height:22px;background:#fff;color:var(--deep);font:700 14px/22px var(--head);text-align:center;border-radius:1px}
+.locs .tag button{border:0;background:transparent;color:#bfe5db;font-size:20px;line-height:1;padding:2px 8px;min-height:32px}
+.note{font-size:13.5px;color:var(--muted);margin-top:8px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.switch:first-of-type{border-top:0}
+.switch .t{font:700 16px/1.1 var(--head);letter-spacing:.1em;text-transform:uppercase}.switch .s{font-size:13px;color:var(--muted);margin-top:2px}
+.switch input{appearance:none;-webkit-appearance:none;flex:none;width:54px;height:30px;border-radius:2px;background:#2a2a2a;position:relative;transition:.15s;border:0;min-height:0;padding:0}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:1px;background:#d8d8d6;transition:.15s}
+.switch input:checked{background:var(--deep)}
+.switch input:checked::after{transform:translateX(24px);background:#fff}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(13,13,13,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{max-width:560px;margin:0 auto}
+.primary{width:100%;min-height:56px;border:1px solid var(--accent);border-radius:2px;background:var(--deep);color:#fff;font:700 21px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.primary:disabled{opacity:.6}
+.recent{list-style:none;margin:0;padding:0}
+.recent li{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid var(--line);font-size:15px}
+.recent li:first-child{border-top:0}
+.recent .m{color:var(--muted);font-size:13px}
+.recent .h{font:700 20px/1 var(--head);white-space:nowrap;color:var(--accent)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;z-index:10}
+.sheet.open{display:flex}
+.panel{background:var(--card);border-top:2px solid var(--accent);width:100%;max-width:560px;margin:0 auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+.panel h3{margin:0 0 4px;font:700 28px/1 var(--head);text-transform:uppercase}
+.sum{margin:12px 0 16px}
+.sum div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--line);font-size:15.5px}
+.sum div:first-child{border-top:0}
+.sum span:first-child{color:var(--muted);flex:none;font:700 14px/1.6 var(--head);letter-spacing:.12em;text-transform:uppercase}.sum span:last-child{text-align:right;font-weight:600;word-break:break-word}
+.btns{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+.btns .primary{min-height:54px}.btns .ghost{min-height:54px;font-size:18px}
+.done{text-align:center;padding:36px 8px 8px}
+.tick{width:84px;height:84px;border-radius:2px;background:var(--deep);border:1px solid var(--accent);color:#fff;display:grid;place-items:center;font-size:46px;margin:0 auto 14px}
+.done h2{font:700 36px/1 var(--head);margin:0 0 6px;text-transform:uppercase;letter-spacing:.02em;color:var(--text)}
+.done p{color:var(--muted);margin:0 0 20px}
+.hidden{display:none!important}
+.fail{background:rgba(224,52,59,.14);border:1px solid var(--bad);color:var(--text);border-radius:2px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-top:14px;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.tabs button{border:0;background:var(--field);color:var(--muted);min-height:48px;font:700 17px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.tabs button[aria-selected=true]{background:var(--deep);color:#fff}
+.wk-nav{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wk-nav .ghost{min-width:52px;font-size:22px;padding:8px 14px}
+.wk-title{text-align:center}
+.wk-title .r{font:700 22px/1.1 var(--head);text-transform:uppercase;letter-spacing:.04em}
+.wk-title .t{font:700 15px/1.5 var(--head);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.day{display:grid;grid-template-columns:58px 1fr;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:2px;color:var(--text);padding:12px;margin-top:10px;font:inherit}
+.day.has{border-left-color:var(--accent)}
+.day.today{box-shadow:0 0 0 1px var(--accent) inset}
+.day .dn{font:700 22px/1 var(--head);text-transform:uppercase;letter-spacing:.06em}
+.day .dd{font-size:13px;color:var(--muted);margin-top:2px}
+.day .none{color:var(--muted);font-size:14.5px;padding-top:3px}
+.shift{padding:7px 0;border-top:1px solid var(--line);font-size:15px}
+.shift:first-child{border-top:0;padding-top:0}
+.shift:last-child{padding-bottom:0}
+.shift .top{display:flex;justify-content:space-between;gap:10px}
+.shift .m{color:var(--muted);font-size:13px;margin-top:2px}
+.shift .h{font:700 19px/1 var(--head);color:var(--accent);white-space:nowrap}
+.st{display:inline-block;margin-left:8px;padding:2px 6px;border:1px solid #4a4a48;border-radius:2px;font:700 11px/1.2 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);vertical-align:1px}
+.st.ok{border-color:var(--accent);color:var(--accent)}
+
+#payPinIn{width:100%;min-height:52px;border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:2px;padding:12px 14px;font:inherit;font-size:17px}
+.paystatus{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:var(--muted);font-size:13.5px}
+.pday{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:2px;padding:12px;margin-top:10px}
+.pday{width:100%;display:block;text-align:left;color:var(--text);font:inherit;cursor:pointer}
+.pdh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.pdn{font:700 22px/1 var(--head);text-transform:uppercase;letter-spacing:.04em}
+.pdt{color:var(--muted);font-size:14px;margin-top:4px}
+.pdv{font:700 26px/1 var(--head);color:var(--accent);white-space:nowrap}
+.pl{display:flex;justify-content:space-between;gap:12px;padding-top:8px}
+.pl .a{min-width:0}
+.pl .a b{display:block;font-weight:600;font-size:15px}
+.pl .a span{color:var(--muted);font-size:13.5px}
+.pl .m{font:700 18px/1.2 var(--head);align-self:center;white-space:nowrap}
+.ivl{display:grid;grid-template-columns:86px 1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.ivl:first-child{border-top:0}
+.ivl span{min-width:0;overflow-wrap:anywhere}
+.ivl .n{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.ivtotal{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--text);padding:10px 0;margin-top:4px}
+.ivtotal span{font:700 15px/1 var(--head);letter-spacing:.16em;text-transform:uppercase}
+.ivtotal b{font:700 30px/1 var(--head)}
+.linkbtn{background:none;border:0;color:var(--accent);font:inherit;text-decoration:underline;padding:0}
+.ivdate{min-height:52px;display:flex;align-items:center;font-size:17px}
+
+/* ===== new look: white, rounded, logo green ===== */
+.topban{background:#fff;padding:calc(18px + env(safe-area-inset-top)) 16px 12px}
+.topban img{display:block;width:100%;max-width:528px;height:auto;margin:0 auto;filter:drop-shadow(0 1px 2.5px rgba(0,0,0,.28))}
+.hello{background:#fff;border-bottom:1px solid var(--line)}
+.hello .wrap{text-align:center}
+header{border:0;padding:6px 0 14px;text-align:center}
+header h1{font:700 34px/1.1 var(--head);text-transform:none;letter-spacing:.2px}
+header h1 span{color:var(--accent)}
+header p{margin:6px 0 0;font-size:15px;color:var(--muted)}
+.tabs{margin:0;border:0;border-radius:0;background:none;gap:4px;overflow:visible}
+.tabs button{background:none;min-height:0;padding:12px 4px 13px;border-bottom:3px solid transparent;color:var(--muted);font-size:16px}
+.tabs button[aria-selected=true]{background:none;color:var(--accent);border-bottom-color:var(--accent)}
+.card{border:0;border-radius:20px;padding:18px;box-shadow:0 1px 2px rgba(17,26,23,.05),0 8px 24px rgba(17,26,23,.05)}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea,#payPinIn,#wkPinIn{border:1.5px solid transparent;border-radius:14px}
+input::placeholder,textarea::placeholder{color:#9aa6a1}
+input:focus,select:focus,textarea:focus{background:#fff;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px}
+.chip[aria-checked=true]{background:var(--accent);border-color:var(--accent)}
+.quick button,.ghost{border:1.5px solid var(--line);border-radius:14px;background:#fff}
+.loc button{border-radius:14px;border-width:1.5px;background:#fff}
+.locs .tag{border:0;border-radius:999px;background:var(--accent-soft);color:var(--accent);padding:6px 8px 6px 14px}
+.switch input{background:#d6dedb;border-radius:99px}
+.switch input::after{background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch input:checked{background:var(--accent)}
+.bar{position:static;background:none;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:18px 16px calc(28px + env(safe-area-inset-bottom))}
+body{padding-bottom:0}
+.primary{border:0;border-radius:16px;box-shadow:0 8px 20px rgba(26,107,90,.35)}
+.sheet{background:rgba(0,0,0,.5)}
+.panel{border-top:0;border-radius:26px 26px 0 0}
+.tick{border-radius:50%;border:0}
+.day,.pday{border:0;border-left:0;border-radius:16px;box-shadow:0 1px 2px rgba(17,26,23,.05),0 6px 18px rgba(17,26,23,.05)}
+.day.has,.pday{box-shadow:0 1px 2px rgba(17,26,23,.05),0 6px 18px rgba(17,26,23,.05)}
+.day.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.st{border:1px solid #c9d3cf;border-radius:99px;padding:2px 8px}
+.st.ok{border-color:var(--accent);background:var(--accent-soft)}
+.banner{border-radius:14px}
+.fail{border-radius:14px}
+.ivtotal{border-top-color:var(--accent)}
+.ptot{background:#fff;border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 1px 2px rgba(17,26,23,.05),0 8px 24px rgba(17,26,23,.05)}
+.ptot h3{margin:0 0 6px;font:700 21px/1 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.tl{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
+.tl:first-of-type{border-top:0}
+.tl .q{color:var(--muted);font-size:14px;text-align:right;white-space:nowrap}
+.tl b{min-width:84px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.tl2{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--accent);margin-top:6px;padding-top:12px}
+.tl2 span{font:700 18px/1 var(--head);letter-spacing:.14em;text-transform:uppercase}
+.tl2 b{font:700 32px/1 var(--head);color:var(--accent)}
+.ltime{border:1.5px solid var(--line);border-radius:16px;padding:12px 14px 14px;margin-top:12px;background:#fff}
+.ltn{display:flex;align-items:center;gap:10px;font:700 19px/1.1 var(--head);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.ltn b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px}
+.ltime label{margin-top:0}
+.card h2{font-size:21px;font-weight:700;letter-spacing:.12em;margin:0 0 16px;-webkit-text-stroke:.4px currentColor}
+.bar .in{max-width:528px}
+.rateline{font-size:14px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--line);line-height:1.5}.rateline b{color:var(--text)}
+.rclink{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.rcard{border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-top:12px;background:#fff}
+.rcard label{margin-top:12px}.rcard .hint{margin:0 0 6px}
+.rch{display:flex;justify-content:space-between;align-items:center}
+.rch b{font:700 16px/1 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.rcx{background:none;border:0;color:var(--bad);font:700 14px/1 var(--head);letter-spacing:.1em;text-transform:uppercase;padding:6px 0}
+.rcam{width:100%;min-height:64px;border:2px dashed #b9cbc5;border-radius:14px;background:var(--field);color:var(--accent);font:700 17px/1 var(--head);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:10px}
+.rcam.invalid{border-color:var(--bad)}
+.rph{display:flex;gap:12px;align-items:center}.rph img{width:84px;height:84px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+#rcBox{border-top:1px solid var(--line);margin-top:6px;padding-top:2px}
+:root{--head:"Archivo Narrow","Arial Narrow",Arial,sans-serif}body,input,select,textarea,button{font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}.eyebrow,.tabs button,.chip,.ghost,.primary,label,.lab,h1,h2,h3,.rcam,.rch b,.rcx{font-family:var(--head)}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="topban"><img alt="Dabe Installations – Handpicked crews. Better results." src="logo.png"></div>
+<div class="hello"><div class="wrap">
+  <header>
+    <h1 id="welcome">Welcome</h1>
+    <p>Fill in once per shift. Your hours and pay are worked out for you.</p>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-t="add">Add shift</button><button type="button" role="tab" aria-selected="false" data-t="week">My week</button><button type="button" role="tab" aria-selected="false" data-t="pay" id="payTab" class="hidden">My pay</button></div>
+</div></div>
+<div class="wrap">
+  <div id="banner" class="banner hidden"><b>Preview mode.</b> Nothing is sent to the sheet yet.</div>
+<form id="form" novalidate autocomplete="off">
+    <section class="card" id="who">
+      <h2>You</h2>
+      <div id="nameBox"></div>
+      <div class="lab" style="margin-top:14px">Your role</div>
+      <div class="chips" id="roles" role="radiogroup" aria-label="Role"></div>
+      <div class="err" id="e-role">Pick your role</div>
+      <div class="rateline" id="rateLine"></div>
+    </section>
+
+    <section class="card">
+      <h2>The job</h2>
+      <label for="project">Project</label>
+      <select id="project"></select>
+      <input type="text" id="projectOther" class="hidden" placeholder="Type the project name" style="margin-top:8px">
+      <div class="err" id="e-project">Pick the project</div>
+
+      <label for="locIn">Location(s)</label>
+      <div class="hint">Suburb or town of each store or site, in the order you visited.</div>
+      <div class="loc">
+        <input type="text" id="locIn" placeholder="e.g. Chadstone" enterkeyhint="done" autocapitalize="words">
+        <button type="button" id="locAdd">Add</button>
+      </div>
+      <div class="locs" id="locs"></div>
+      <div class="err" id="e-loc">Add at least one location</div>
+    </section>
+
+    <section class="card">
+      <h2>When</h2>
+      <label for="date">Date</label>
+      <input type="date" id="date">
+      <div class="err" id="e-date">Pick the date</div>
+
+      <div class="row2" style="margin-top:16px">
+        <div><label for="start" style="margin-top:0">Start</label><input type="time" id="start"></div>
+        <div><label for="finish" style="margin-top:0">Finish</label><input type="time" id="finish"></div>
+      </div>
+      <div id="locTimes" class="hidden"></div>
+      <div class="note hidden" id="overnight">Finishes the next day (overnight shift).</div>
+      <div class="err" id="e-time">Add start and finish times (they can’t be the same)</div>
+    </section>
+
+    <section class="card">
+      <h2>Extras</h2>
+      <div class="row2">
+        <div>
+          <label for="km" style="margin-top:0">KMs</label>
+          <input type="number" id="km" inputmode="decimal" min="0" step="1" placeholder="0">
+        </div>
+        <div>
+          <label for="travel" style="margin-top:0">Travel time (hrs)</label>
+          <select id="travel"></select>
+        </div>
+      </div>
+      <div class="note">Not sure how KMs and travel time are paid? <a class="rclink" href="https://drive.google.com/file/d/1i2i6bStV91_ThjKRkxAWFXG224EHEGvk/view" target="_blank" rel="noopener">See the rate card &rarr;</a></div>
+      <div style="margin-top:10px">
+        <div class="switch"><div><div class="t">LAFHA</div><div class="s">Living away from home – per night away</div></div><input type="checkbox" id="lafha"></div>
+        <div class="switch"><div><div class="t">Receipts</div><div class="s">Any job-related expenses? Add the receipt</div></div><input type="checkbox" id="rcOn"></div>
+      </div>
+      <div id="rcBox" class="hidden">
+        <div id="rcList"></div>
+        <button type="button" class="ghost" id="rcAdd" style="width:100%;margin-top:12px">+ Add another receipt</button>
+        <div class="err" id="e-rc">Fill in every receipt and add a photo of each one before you can send.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Notes</h2>
+      <label for="comments" style="margin-top:0">Comments <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+      <textarea id="comments" placeholder="Anything we should know about this shift"></textarea>
+    </section>
+  </form>
+
+<section id="weekView" class="hidden">
+<div class="card"><div class="wk-nav"><button class="ghost" type="button" id="wkPrev" aria-label="Previous week">&#8249;</button><div class="wk-title"><div class="r" id="wkRange"></div><div class="t" id="wkTotal"></div></div><button class="ghost" type="button" id="wkNext" aria-label="Next week">&#8250;</button></div></div>
+<div class="card hidden" id="wkPin"><label for="wkPinIn" style="margin-top:0">Your PIN</label><div class="hint">The PIN Gabriel gave you. You only need to enter it once on this phone.</div><input type="password" id="wkPinIn" inputmode="numeric" autocomplete="off" placeholder="PIN"><button class="primary" type="button" id="wkPinGo" style="margin-top:12px">Show my week</button></div>
+<div class="fail hidden" id="wkErr" style="margin-top:14px"></div>
+<div id="wkDays"></div>
+</section>
+
+  <section id="payView" class="hidden">
+<div class="card"><div class="wk-nav"><button class="ghost" type="button" id="payPrev" aria-label="Previous week">&#8249;</button><div class="wk-title"><div class="r" id="payRange"></div><div class="t" id="payTotal"></div></div><button class="ghost" type="button" id="payNext" aria-label="Next week">&#8250;</button></div><div class="paystatus" id="payStatus"></div></div>
+<div class="card hidden" id="payPin"><label for="payPinIn" style="margin-top:0">Your PIN</label><div class="hint">The PIN Gabriel gave you. You only need to enter it once on this phone.</div><input type="password" id="payPinIn" inputmode="numeric" autocomplete="off" placeholder="PIN"><button class="primary" type="button" id="payPinGo" style="margin-top:12px">Show my pay</button></div>
+<div class="fail hidden" id="payErr" style="margin-top:14px"></div>
+<div id="payDays"></div>
+<div class="hidden" id="payGen" style="margin-top:14px"><button class="primary" type="button" id="payGenBtn">Generate invoice</button></div>
+<div class="note" style="text-align:center;margin-top:14px">Tap a day for its details. Only the rates that applied to each shift are shown. Every invoice is checked and approved by the office before payment.</div>
+</section>
+
+<section class="card hidden" id="recentCard">
+    <h2>Your latest entries</h2>
+    <ul class="recent" id="recent"></ul>
+  </section>
+
+  <section class="card done hidden" id="done">
+    <div class="tick">✓</div>
+    <h2>Sent!</h2>
+    <p>Your shift has been added to your timesheet.</p>
+    <button class="primary" id="another" type="button">Add another shift</button>
+  </section>
+</div>
+
+<div class="bar" id="bar"><div class="in"><button class="primary" id="review" type="button">Review &amp; send</button></div></div>
+
+<div class="sheet" id="pfSheet" role="dialog" aria-modal="true" aria-labelledby="pfT">
+<div class="panel">
+<h3 id="pfT">Your invoice details</h3>
+<div class="note" style="margin:0">Enter these once. They are saved on this phone only.</div>
+<label for="pfName">Full name</label><input type="text" id="pfName" autocomplete="off">
+<label for="pfAddr">Address</label><input type="text" id="pfAddr" placeholder="Street, suburb, state, postcode" autocomplete="off">
+<label for="pfAbn">ABN</label><input type="text" id="pfAbn" inputmode="numeric" autocomplete="off">
+<div class="row2"><div><label for="pfBsb">BSB</label><input type="text" id="pfBsb" inputmode="numeric" autocomplete="off"></div><div><label for="pfAcct">Account number</label><input type="text" id="pfAcct" inputmode="numeric" autocomplete="off"></div></div>
+<div class="err" id="pfErr">Fill in every box</div>
+<div class="btns" style="margin-top:16px"><button class="ghost" type="button" id="pfCancel">Cancel</button><button class="primary" type="button" id="pfSave">Save &amp; continue</button></div>
+</div>
+</div>
+
+<div class="sheet" id="ivSheet" role="dialog" aria-modal="true" aria-labelledby="ivT">
+<div class="panel">
+<h3 id="ivT">Your invoice</h3>
+<div class="note" id="ivNote" style="margin:0"></div>
+<div class="row2" style="margin-top:14px"><div><label for="ivNo" style="margin-top:0">Invoice no.</label><input type="text" id="ivNo" inputmode="numeric" autocomplete="off"></div><div><div class="lab" style="margin-top:0">Date</div><div class="ivdate" id="ivDate"></div></div></div>
+<div id="ivLines" style="margin:12px 0 4px"></div>
+<div class="ivtotal"><span>Total</span><b id="ivTotal"></b></div>
+<div class="note">No GST charged. <button type="button" class="linkbtn" id="ivEdit">Change my details</button></div>
+<div class="note" id="ivMsg"></div>
+<div class="btns" style="margin-top:14px"><button class="ghost" type="button" id="ivClose">Close</button><button class="primary" type="button" id="ivSave">Save PDF</button></div>
+<button class="ghost" type="button" id="ivShare" style="width:100%;margin-top:10px">Share / send</button>
+</div>
+</div>
+
+<div class="sheet" id="daySheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
+<div class="panel">
+<h3 id="dayTitle"></h3>
+<div class="note" id="dayTotal" style="margin:0"></div>
+<div id="dayBody"></div>
+<div class="btns" style="grid-template-columns:1fr;margin-top:6px"><button class="primary" type="button" id="dayClose">Close</button></div>
+</div>
+</div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="rt">
+  <div class="panel">
+    <h3 id="rt">Check your shift</h3>
+    <div class="note" style="margin:0">Make sure this is right, then send.</div>
+    <div class="sum" id="sum"></div>
+    <div id="pinRow" class="hidden" style="margin:0 0 16px">
+      <label for="pin" style="margin-top:0">Your PIN</label>
+      <div class="hint">The PIN Gabriel gave you. You only need to enter it once on this phone.</div>
+      <input type="password" id="pin" inputmode="numeric" autocomplete="off" placeholder="PIN">
+      <div class="err" id="e-pin">Enter your PIN</div>
+    </div>
+    <div class="fail hidden" id="fail"></div>
+    <div class="btns">
+      <button class="ghost" type="button" id="edit">Edit</button>
+      <button class="primary" type="button" id="send">Send to Dabe</button>
+    </div>
+    <div class="quick hidden" id="copyRow"><button type="button" id="copy" class="ghost" style="width:100%">Copy summary to send by text</button></div>
+  </div>
+</div>
+
+<script>
+/* ============ SETTINGS (edit these) ============ */
+const CONFIG = {
+  // One entry per contractor. url = the "Web app URL" from that contractor's sheet.
+  // Leave url empty to run in preview mode. If everyone shares one sheet, use the same url for all.
+  CONTRACTORS: [
+    { name: "Leonardo Lisboa", rates: { "INSTALLER": [45, 65] }, url: "https://script.google.com/macros/s/AKfycbxKNB1oGm9aIttSZQPDXJZReXtDjMjhD41vgQltDR0RHwK13KVvQh9-LKw54tuZCEeSjw/exec", role: "INSTALLER", pay: true, invNext: 61 },
+    { name: "Christopher Wright-smith", url: "https://script.google.com/macros/s/AKfycbzHp0rdn1rSRWkV5OLdJG3Mv9aVPvtM3l8EmDw9rvMTuMi_YEzU5w8ZtNXBoxFG8BVNwg/exec", role: "INSTALLER", pay: true },
+    { name: "Gabriel Lemos", url: "https://script.google.com/macros/s/AKfycbzUuEqhBE3WIZoLA1BWkTNHa2JybX_MX_jBBYxzC1NxO-hS5Z-Aj1ewlPadEZdJI498/exec", role: "INSTALLER", pay: true },
+    { name: "Leonardo Prado", url: "https://script.google.com/macros/s/AKfycbw9OUS86v6xJVS772qZTTwtGDt6iqjC7X0kgO9kn5bN5x3hZ5aG5DFWOnyUB2b51oAn/exec", role: "INSTALLER", pay: true },
+    { name: "Matheus Assis", url: "https://script.google.com/macros/s/AKfycbxQqnQ0nEPAntDY-uNxyTFnb2T9XZzWXKvDdXAKm4gZ8HkKR4aUci1ussFJzKjlzEbQ/exec", role: "INSTALLER", pay: true, invNext: 28 },
+    { name: "Nathan Honorato", url: "https://script.google.com/macros/s/AKfycbzAdwPF2ZCNXNHK3974xuAWYEF04l-mZK4G43VO8uLLdnoGulmmf2Pq5Nhmg0eaggZt/exec", role: "INSTALLER", pay: true, invNext: 13 },
+      { name: "Marcos Oliveira", url: "https://script.google.com/macros/s/AKfycby5FlnzgKAcCCanAe-LLeSi8qPeWe3gTTYYGLu-FOq2cYCVNvepU55IFGNT7uxS9hl4pw/exec", role: "INSTALLER", pay: true },
+    { name: "Rodolfo Campos", url: "https://script.google.com/macros/s/AKfycbwKj1b425t67NEk-nCXUgLW5QNTjRngXeyulmpICnKhSsUIE6rAwbfqIJ7eLUPLn35a/exec", role: "INSTALLER", pay: true, single: { project: "ALDI - MAINTENANCE", amount: 182 } }
+  ],
+  /* Day / night $ per hour for each role (from the contractor rate card) */
+  RATES: { "LABOURER": [38, 50], "GENERAL HAND": [40, 52], "INSTALLER": [45, 57], "LEAD INSTALLER": [50, 62] },
+  ROLES: [
+    ["LABOURER","Labourer"],["GENERAL HAND","General hand"],["INSTALLER","Installer"],["LEAD INSTALLER","Lead installer"]
+  ],
+  PROJECTS: ["3FOLD","ALDI - BUILD","ALDI - MAINTENANCE","BONUS","Cellarbrations","DISPLAYWISE","DYSON","GRILL'D","HOW GROUP","IGA","KMART","Mills","NESPRESSO","SAMSUNG","SHARK","Spotlight","TrueSet","WOOLIES","Yang Yang"],
+  TZ: "Australia/Melbourne"
+};
+/* ================================================ */
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k){ try{ return localStorage.getItem("dabe_"+k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem("dabe_"+k,v); }catch(e){} }
+};
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let role = "", locs = [], lastSummary = "";
+const pinKey = w => "pin_" + (w ? w.name : "");
+const savedPin = w => store.get(pinKey(w)) || "";
+function currentPin(w){ return savedPin(w) || ($("pin") ? $("pin").value.trim() : ""); }
+
+/* ---- date helpers (Melbourne) ---- */
+function melDate(offset){
+  const d = new Date(Date.now() + (offset||0)*864e5);
+  return d.toLocaleDateString("en-CA",{timeZone:CONFIG.TZ}); // yyyy-mm-dd
+}
+function fmtDate(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+}
+function fmt12(t){
+  const [h,m] = t.split(":").map(Number);
+  const ap = h>=12 ? "pm":"am"; const hh = h%12===0 ? 12 : h%12;
+  return hh+":"+String(m).padStart(2,"0")+" "+ap;
+}
+
+/* ---- build the form ---- */
+const contractors = CONFIG.CONTRACTORS;
+const previewMode = contractors.every(c => !c.url);
+if (previewMode) $("banner").classList.remove("hidden");
+
+function buildName(){
+  const box = $("nameBox");
+  if (contractors.length === 1){
+    box.innerHTML = '<div style="font:700 30px/1 var(--head);text-transform:uppercase">Hi, '+esc(contractors[0].name.split(" ")[0])+'</div><div class="note" style="margin-top:2px">'+esc(contractors[0].name)+'</div>';
+  } else {
+    box.innerHTML = '<label for="whoSel">Your name</label><select id="whoSel"></select><div class="err" id="e-who">Pick your name</div>';
+    const s = $("whoSel");
+    s.innerHTML = '<option value="">Select your name…</option>' + contractors.map(c => '<option>'+esc(c.name)+'</option>').join("");
+    const qn = new URLSearchParams(location.search).get("name") || store.get("name");
+    if (qn && contractors.some(c => c.name === qn)){
+      s.value = qn;
+      box.innerHTML = '<div class="lab">Your name</div><div style="font:700 20px/1.2 var(--head);margin-top:2px">'+esc(qn)+'</div><input type="hidden" id="whoSel" value="'+esc(qn)+'"><div class="err" id="e-who">Pick your name</div>';
+      store.set("name", qn);
+      return;
+    }
+    s.addEventListener("change", () => { store.set("name", s.value); applyDefaultRole(); loadRecent(); updatePayTab(); });
+  }
+}
+const who = () => contractors.length === 1 ? contractors[0] : contractors.find(c => c.name === ($("whoSel")||{}).value);
+
+function buildRoles(){
+  $("roles").innerHTML = CONFIG.ROLES.map(([v,l]) =>
+    '<button type="button" class="chip" role="radio" aria-checked="false" data-v="'+esc(v)+'">'+esc(l)+'</button>').join("");
+  $("roles").addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    setRole(b.dataset.v); store.set("role", role);
+  });
+}
+function setRole(v){
+  role = v;
+  document.querySelectorAll("#roles .chip").forEach(b => b.setAttribute("aria-checked", b.dataset.v === v));
+  $("e-role").classList.remove("show");
+  showRate();
+}
+function showRate(){
+  const el = $("rateLine"); if (!el) return;
+  const link = '<a class="rclink" href="https://drive.google.com/file/d/1i2i6bStV91_ThjKRkxAWFXG224EHEGvk/view" target="_blank" rel="noopener">See the full rate card &rarr;</a>';
+  const w = who(), own = (w && w.rates) || {};
+  const r = own[role] || CONFIG.RATES[role];
+  const lab = (CONFIG.ROLES.find(x => x[0] === role) || [0, ""])[1];
+  el.innerHTML = r
+    ? esc(lab) + ': <b>$' + r[0] + '/hr</b> day &middot; <b>$' + r[1] + '/hr</b> night<br>' + link
+    : 'Not sure which role is yours? ' + link;
+}
+function applyDefaultRole(){
+  const saved = store.get("role"); const w = who();
+  const pick = saved || (w && w.role) || "";
+  if (pick && CONFIG.ROLES.some(r => r[0] === pick)) setRole(pick);
+}
+
+function buildProject(){
+  $("project").innerHTML = '<option value="">Select project…</option>' +
+    CONFIG.PROJECTS.map(p => '<option>'+esc(p)+'</option>').join("") + '<option value="__other">Other…</option>';
+  const last = store.get("project"); if (last && CONFIG.PROJECTS.includes(last)) $("project").value = last; applySingle();
+  $("project").addEventListener("change", () => {
+    $("projectOther").classList.toggle("hidden", $("project").value !== "__other"); applySingle();
+    if ($("project").value === "__other") $("projectOther").focus();
+    $("e-project").classList.remove("show");
+  });
+}
+function buildTravel(){
+  let o = '<option value="">None</option>';
+  for (let i=0.5;i<=8;i+=0.5) o += '<option value="'+i+'">'+i+' hr'+(i===1?'':'s')+'</option>';
+  $("travel").innerHTML = o;
+}
+
+function renderLocs(){
+  $("locs").innerHTML = locs.map((l,i) =>
+    '<div class="tag"><b>'+(i+1)+'</b>'+esc(l)+'<button type="button" data-i="'+i+'" aria-label="Remove '+esc(l)+'">×</button></div>').join("");
+  if (locs.length) $("e-loc").classList.remove("show");
+}
+function addLoc(){
+  const v = $("locIn").value.trim().replace(/\s+/g," ");
+  if (!v) return;
+  v.split(",").map(s => s.trim()).filter(Boolean).forEach(s => locs.push(s));
+  $("locIn").value = ""; renderLocs();
+}
+$("locAdd").addEventListener("click", () => { addLoc(); $("locIn").focus(); });
+$("locIn").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); addLoc(); } });
+$("locs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-i]"); if (!b) return;
+  locs.splice(+b.dataset.i,1); renderLocs();
+});
+
+function checkOvernight(){
+  const s = $("start").value, f = $("finish").value;
+  $("overnight").classList.toggle("hidden", !(s && f && f < s));
+  if (s && f && s !== f) $("e-time").classList.remove("show");
+}
+$("start").addEventListener("input", checkOvernight);
+$("finish").addEventListener("input", checkOvernight);
+
+
+/* ---- receipts ---- */
+var receipts = [];
+function rcNew(){ return {store:"", item:"", amount:"", job:"", photo:""}; }
+function rcJobOptions(sel){
+  var o = ['<option value="">Select job…</option>'], seen = {};
+  [].forEach.call($("project").options, function(x){ if (x.value && x.value !== "__other"){ seen[x.value]=1; o.push('<option'+(x.value===sel?' selected':'')+' value="'+esc(x.value)+'">'+esc(x.text)+'</option>'); } });
+  if (sel && !seen[sel]) o.push('<option selected value="'+esc(sel)+'">'+esc(sel)+'</option>');
+  return o.join("");
+}
+function rcRender(){
+  $("rcList").innerHTML = receipts.map(function(r,i){
+    return '<div class="rcard" data-i="'+i+'">'+
+    '<div class="rch"><b>Receipt '+(i+1)+'</b>'+(receipts.length>1?'<button type="button" class="rcx" data-rm="'+i+'" aria-label="Remove receipt">Remove</button>':'')+'</div>'+
+    '<label>Store</label><div class="hint">Where did you buy it?</div><input type="text" data-f="store" value="'+esc(r.store)+'" placeholder="e.g. Bunnings Oakleigh">'+
+    '<label>What did you buy</label><input type="text" data-f="item" value="'+esc(r.item)+'" placeholder="e.g. Screws and drop sheets">'+
+    '<div><label>Amount ($)</label><input type="number" inputmode="decimal" step="0.01" min="0" data-f="amount" value="'+esc(r.amount)+'" placeholder="0.00"></div>'+
+    '<div><label>Job it was for</label><select data-f="job">'+rcJobOptions(r.job)+'</select></div>'+
+    '<label>Photo of the receipt</label>'+
+    (r.photo?'<div class="rph"><img alt="Receipt photo" src="'+r.photo+'"><button type="button" class="ghost" data-ph="'+i+'">Retake</button></div>':'<button type="button" class="rcam" data-ph="'+i+'"><span>📷</span> Take or choose a photo</button>')+
+    '</div>';
+  }).join("");
+}
+function rcData(){
+  if (!$("rcOn").checked) return [];
+  return receipts.map(function(r){ return {store:r.store.trim(), item:r.item.trim(), amount:Math.round(parseFloat(r.amount||0)*100)/100, job:r.job, photo:r.photo}; });
+}
+function rcBad(){
+  if (!$("rcOn").checked) return false;
+  var bad = false;
+  [].forEach.call($("rcList").querySelectorAll(".rcard"), function(c){
+    var r = receipts[+c.dataset.i];
+    var chk = {store:!r.store.trim(), item:!r.item.trim(), amount:!(parseFloat(r.amount)>0), job:!r.job};
+    Object.keys(chk).forEach(function(f){ var el = c.querySelector('[data-f="'+f+'"]'); if (el) el.classList.toggle("invalid", chk[f]); if (chk[f]) bad = true; });
+    var cam = c.querySelector(".rcam"); if (cam) cam.classList.toggle("invalid", !r.photo); if (!r.photo) bad = true;
+  });
+  return bad;
+}
+function rcShrink(file, cb){
+  var fr = new FileReader();
+  fr.onload = function(){
+    var im = new Image();
+    im.onload = function(){
+      var m = 1400, k = Math.min(1, m/Math.max(im.width, im.height)), c = document.createElement("canvas");
+      c.width = Math.round(im.width*k); c.height = Math.round(im.height*k);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+      cb(c.toDataURL("image/jpeg", 0.72));
+    };
+    im.onerror = function(){ cb(fr.result); };
+    im.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+$("rcOn").addEventListener("change", function(){
+  $("rcBox").classList.toggle("hidden", !$("rcOn").checked);
+  if ($("rcOn").checked && !receipts.length){ var r = rcNew(); r.job = projectValue() || ""; receipts.push(r); rcRender(); }
+});
+$("rcAdd").addEventListener("click", function(){ var r = rcNew(); r.job = projectValue() || ""; receipts.push(r); rcRender(); });
+$("rcList").addEventListener("input", function(e){
+  var f = e.target.dataset.f; if (!f) return;
+  var c = e.target.closest(".rcard"); receipts[+c.dataset.i][f] = e.target.value; e.target.classList.remove("invalid");
+});
+$("rcList").addEventListener("click", function(e){
+  var rm = e.target.closest("[data-rm]"); if (rm){ receipts.splice(+rm.dataset.rm,1); rcRender(); return; }
+  var ph = e.target.closest("[data-ph]"); if (ph){
+    var inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+    inp.onchange = function(){ if (!inp.files[0]) return; rcShrink(inp.files[0], function(d){ receipts[+ph.dataset.ph].photo = d; rcRender(); }); };
+    inp.click();
+  }
+});
+
+
+/* ---- per-location times (one shift, one timesheet row) ---- */
+var locTimeVals = {};
+function ltKeys(){ var seen = {}; return locs.map(function(l){ seen[l] = (seen[l]||0) + 1; return l + "#" + seen[l]; }); }
+function multiLoc(){ return locs.length > 1 && !singleMode(); }
+function ltOf(i, keys){ return locTimeVals[(keys||ltKeys())[i]] || {s:"", f:""}; }
+function renderLocTimes(){
+  var multi = multiLoc(), row = $("start").closest(".row2"), box = $("locTimes");
+  if (!multi){ box.classList.add("hidden"); box.innerHTML = ""; if (row && !singleMode()) row.classList.remove("hidden"); return; }
+  var keys = ltKeys();
+  if (!Object.keys(locTimeVals).length && ($("start").value || $("finish").value)) locTimeVals[keys[0]] = {s:$("start").value, f:$("finish").value};
+  row.classList.add("hidden"); box.classList.remove("hidden");
+  box.innerHTML = '<div class="note" style="margin-top:14px">You added more than one location. Enter the time you were at each one. It is still sent as one shift.</div>' +
+    locs.map(function(l,i){
+      var v = ltOf(i, keys);
+      return '<div class="ltime" data-k="'+esc(keys[i])+'"><div class="ltn"><b>'+(i+1)+'</b>'+esc(l)+'</div><div class="row2"><div><label>Start</label><input type="time" data-lt="s" value="'+esc(v.s)+'"></div><div><label>Finish</label><input type="time" data-lt="f" value="'+esc(v.f)+'"></div></div></div>';
+    }).join("");
+  syncLocTimes();
+}
+function syncLocTimes(){
+  if (!multiLoc()) return;
+  var keys = ltKeys();
+  $("start").value = ltOf(0, keys).s || ""; $("finish").value = ltOf(keys.length-1, keys).f || "";
+  checkOvernight();
+}
+function ltBad(){
+  var bad = false;
+  [].forEach.call($("locTimes").querySelectorAll(".ltime"), function(c){
+    var v = locTimeVals[c.dataset.k] || {s:"", f:""};
+    var s = c.querySelector('[data-lt="s"]'), f = c.querySelector('[data-lt="f"]');
+    var bs = !v.s || (v.s === v.f), bf = !v.f || (v.s === v.f);
+    s.classList.toggle("invalid", bs); f.classList.toggle("invalid", bf); if (bs || bf) bad = true;
+  });
+  return bad;
+}
+function ltRows(){
+  if (!multiLoc()) return [];
+  var keys = ltKeys();
+  return locs.map(function(l,i){ var v = ltOf(i, keys); return [l, fmt12(v.s)+" → "+fmt12(v.f)]; });
+}
+function ltNote(){
+  if (!multiLoc()) return "";
+  var keys = ltKeys();
+  return "Location times: " + locs.map(function(l,i){ var v = ltOf(i, keys); return l+" "+fmt12(v.s)+"-"+fmt12(v.f); }).join("; ");
+}
+$("locTimes").addEventListener("input", function(e){
+  var t = e.target.dataset.lt; if (!t) return;
+  var k = e.target.closest(".ltime").dataset.k;
+  locTimeVals[k] = locTimeVals[k] || {s:"", f:""}; locTimeVals[k][t] = e.target.value;
+  e.target.classList.remove("invalid"); $("e-time").classList.remove("show");
+  syncLocTimes();
+});
+var _rl = renderLocs; renderLocs = function(){ _rl(); renderLocTimes(); };
+var _as = applySingle; applySingle = function(){ _as(); renderLocTimes(); };
+
+/* ---- validate + review ---- */
+function projectValue(){
+  const p = $("project").value;
+  return p === "__other" ? $("projectOther").value.trim() : p;
+}
+function singleMode() { var w = who(); return !!(w && w.single && projectValue() === w.single.project); }
+function applySingle() {
+  try {
+    var on = singleMode(), r = $("start").closest(".row2");
+    if (r) r.classList.toggle("hidden", on);
+    if (on) $("e-time").classList.remove("show");
+    var n = $("singleNote");
+    if (!n) { n = document.createElement("div"); n.className = "note"; n.id = "singleNote"; $("projectOther").insertAdjacentElement("afterend", n); }
+    n.classList.toggle("hidden", !on);
+    if (on) n.textContent = "Single charge: " + money(who().single.amount) + " per store. Add each store as a location - one charge per store.";
+  } catch (e) {}
+}
+function validate(){
+  let ok = true, first = null;
+  const bad = (id, cond, field) => { const e = $(id); if (!e) return; e.classList.toggle("show", cond); if (field) $(field).classList.toggle("invalid", cond); if (cond){ ok = false; if(!first) first = e; } };
+  if (contractors.length > 1) bad("e-who", !$("whoSel").value, "whoSel");
+  bad("e-role", !role && !singleMode());
+  bad("e-project", !projectValue(), "project");
+  if ($("locIn").value.trim()) addLoc();
+  bad("e-loc", locs.length === 0);
+  bad("e-date", !$("date").value, "date");
+  bad("e-rc", rcBad());
+  $("e-time").textContent = multiLoc() ? "Add a start and finish time for every location" : "Add start and finish times (they can’t be the same)";
+  bad("e-time", !singleMode() && (multiLoc() ? ltBad() : (!$("start").value || !$("finish").value || $("start").value === $("finish").value)));
+  if (first) first.scrollIntoView({behavior:"smooth", block:"center"});
+  return ok;
+}
+function payload(){
+  const w = who();
+  return {
+    pin: currentPin(w), name: w.name, role, project: projectValue(), location: locs.join(", "),
+    date: $("date").value, start: $("start").value, finish: $("finish").value,
+    km: $("km").value.trim(), travel: $("travel").value, lafha: $("lafha").checked, receipts: rcData(),
+    comments: [ltNote(), $("comments").value.trim()].filter(Boolean).join("\n")
+  };
+}
+function summaryRows(p){
+  const roleLabel = (CONFIG.ROLES.find(r => r[0] === p.role)||[0,p.role])[1];
+  return [
+    ["Name", p.name], ["Role", roleLabel || "-"], ["Project", p.project], ["Location(s)", p.location],
+    ["Date", fmtDate(p.date)],
+    singleMode() ? ["Single charge", money(who().single.amount) + " per store x " + locs.length] : ["Time", fmt12(p.start)+" → "+fmt12(p.finish)+(p.finish < p.start ? " (next day)" : "")],
+    ...ltRows(), ["KMs", p.km || "—"], ["Travel time", p.travel ? p.travel+" hrs" : "—"],
+    ["LAFHA", p.lafha ? "Yes" : "No"],
+  ].concat(p.receipts.length ? [["Receipts", p.receipts.length + (p.receipts.length === 1 ? " receipt" : " receipts") + " · " + money(p.receipts.reduce(function(a,r){return a+r.amount;},0))]] : []).concat([
+    ["Comments", $("comments").value.trim() || "—"]
+  ]);
+}
+$("review").addEventListener("click", () => {
+  if (!validate()) return;
+  const p = payload(); const rows = summaryRows(p);
+  $("sum").innerHTML = rows.map(r => '<div><span>'+esc(r[0])+'</span><span>'+esc(r[1])+'</span></div>').join("");
+  lastSummary = "Shift – " + rows.map(r => r[0]+": "+r[1]).join("\n");
+  $("fail").classList.add("hidden"); $("copyRow").classList.add("hidden");
+  const w0 = who();
+  const needPin = !!(w0 && w0.url && !savedPin(w0));
+  $("pinRow").classList.toggle("hidden", !needPin); $("pin").value = ""; $("e-pin").classList.remove("show");
+  $("send").disabled = false; $("send").textContent = "Send to Dabe";
+  $("sheet").classList.add("open");
+});
+$("edit").addEventListener("click", () => $("sheet").classList.remove("open"));
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet")) $("sheet").classList.remove("open"); });
+
+/* ---- send ---- */
+const RECEIPT_MAILER = "https://script.google.com/macros/s/AKfycbzlTuCuRy5GEADcqHBbi81hblab_kXtmozqsYhrO4bog6Bj1_mGrT-OvnPUB1JgriB42Q/exec";
+const RECEIPT_TOKEN = "dabe-rcpt-7f3a91c2";
+async function mailReceipts(p, w){
+  try{
+    const r = await fetch(RECEIPT_MAILER, { method:"POST", body: JSON.stringify({ token: RECEIPT_TOKEN, name: w.name, date: p.date, dateNice: fmtDate(p.date), location: locs.join(" / "), project: p.project, receipts: p.receipts }), redirect:"follow" });
+    const j = await r.json(); return !!j.ok;
+  }catch(e){ return false; }
+}
+async function send(){
+  const p = payload(); const w = who();
+  if (w.url && p.receipts && p.receipts.length){
+    const okMail = await mailReceipts(p, w);
+    if (!okMail) return { ok:false, error:"Couldn't send your receipts. Check your signal and try again." };
+    p.comments = [p.comments, "Receipts emailed: " + p.receipts.map(function(r){ return r.store + " $" + r.amount.toFixed(2); }).join("; ")].filter(Boolean).join("\n");
+  }
+  delete p.receipts;
+  if (!w.url){ await new Promise(r => setTimeout(r, 700)); return {ok:true, preview:true}; }
+  if (singleMode()) { for (var i = 0; i < locs.length; i++) { var pp = Object.assign({}, p, { location: locs[i], single: w.single.amount }); var rs = await (await fetch(w.url, { method: "POST", body: JSON.stringify(pp), redirect: "follow" })).json(); if (!rs.ok) return rs; } return { ok: true }; }
+const res = await fetch(w.url, { method:"POST", body: JSON.stringify(p), redirect:"follow" });
+  return await res.json();
+}
+$("send").addEventListener("click", async () => {
+  const btn = $("send"); $("fail").classList.add("hidden");
+  const w1 = who();
+  if (w1 && w1.url && !currentPin(w1)){ $("e-pin").classList.add("show"); $("pin").focus(); return; }
+  btn.disabled = true; btn.textContent = "Sending…";
+  try{
+    const r = await send();
+    if (r && r.ok){
+      if (w1 && w1.url) store.set(pinKey(w1), currentPin(w1));
+      store.set("project", CONFIG.PROJECTS.includes(projectValue()) ? projectValue() : "");
+      $("sheet").classList.remove("open");
+      $("form").classList.add("hidden"); $("bar").classList.add("hidden");
+      $("done").classList.remove("hidden"); window.scrollTo({top:0,behavior:"smooth"});
+      loadRecent();
+    } else {
+      throw new Error((r && r.error) || "Something went wrong");
+    }
+  }catch(err){
+    const dup = /already in the timesheet/i.test(err.message);
+    const badPin = /wrong pin/i.test(err.message);
+    if (badPin){ try{ localStorage.removeItem("dabe_"+pinKey(w1)); }catch(e){} $("pinRow").classList.remove("hidden"); $("pin").value = ""; }
+    $("fail").textContent = badPin ? "That PIN isn’t right. Check it with Gabriel and try again."
+      : dup ? err.message
+      : "Couldn’t send – check your signal and tap Send again. (" + err.message + ")";
+    $("fail").classList.remove("hidden");
+    if (!dup && !badPin) $("copyRow").classList.remove("hidden");
+    btn.disabled = false; btn.textContent = "Send again";
+  }
+});
+$("copy").addEventListener("click", async () => {
+  try{ await navigator.clipboard.writeText(lastSummary); $("copy").textContent = "Copied ✓"; }
+  catch(e){ window.prompt("Copy this and text it to Gabriel:", lastSummary); }
+});
+$("another").addEventListener("click", () => {
+  locs = []; locTimeVals = {}; renderLocs();
+  ["start","finish","km","comments","locIn"].forEach(id => $(id).value = "");
+  $("travel").value = ""; $("date").value = melDate(0); $("lafha").checked = false; $("rcOn").checked = false; receipts = []; rcRender(); $("rcBox").classList.add("hidden"); applySingle();
+  checkOvernight();
+  $("done").classList.add("hidden"); $("form").classList.remove("hidden"); $("bar").classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+/* ---- latest entries (so they can see it landed) ---- */
+async function loadRecent(){
+  const w = who(); if (!w || !w.url || !savedPin(w)) return;
+  try{
+    const u = w.url + (w.url.includes("?") ? "&" : "?") + "pin=" + encodeURIComponent(savedPin(w)) + "&n=5&name=" + encodeURIComponent(w.name);
+    const r = await (await fetch(u, {redirect:"follow"})).json();
+    if (!r.ok || !r.rows.length) return;
+    $("recent").innerHTML = r.rows.map(x =>
+      '<li><div>'+esc(x.day.slice(0,3))+' '+esc(x.date)+'<div class="m">'+esc(x.start)+' – '+esc(x.finish)+' · '+esc(x.project)+'</div></div><div class="h">'+esc(x.hours)+' h</div></li>').join("");
+    $("recentCard").classList.remove("hidden");
+  }catch(e){}
+}
+
+/* ---- tabs + my week ---- */
+let wkStart = "", wkRows = [];
+function isoD(iso){ const p = iso.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function dIso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function addDays(iso,n){ const d = isoD(iso); d.setDate(d.getDate()+n); return dIso(d); }
+function mondayOf(iso){ const d = isoD(iso); d.setDate(d.getDate()-((d.getDay()+6)%7)); return dIso(d); }
+function fmtShort(iso){ return isoD(iso).toLocaleDateString("en-AU",{day:"numeric",month:"short"}); }
+function hrs(x){ const n = parseFloat(x); return isNaN(n) ? 0 : n; }
+function stCls(s){ return /approved|paid|invoiced/i.test(s||"") ? "st ok" : "st"; }
+function stTxt(s){ return s && String(s).trim() ? String(s).trim() : "Submitted"; }
+
+function showTab(t){
+const wk = t === "week", pay = t === "pay";
+document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.t === t));
+$("weekView").classList.toggle("hidden", !wk); $("payView").classList.toggle("hidden", !pay);
+$("form").classList.toggle("hidden", wk || pay);
+$("bar").classList.toggle("hidden", wk || pay);
+$("done").classList.add("hidden");
+if (pay){ $("recentCard").classList.add("hidden"); if (!payStart) payStart = mondayOf(melDate(0)); loadPay(); }
+if (wk){ $("recentCard").classList.add("hidden"); if (!wkStart) wkStart = mondayOf(melDate(0)); loadWeek(); }
+else if (!pay && $("recent").innerHTML){ $("recentCard").classList.remove("hidden"); }
+window.scrollTo({top:0});
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (b) showTab(b.dataset.t); });
+$("wkPrev").addEventListener("click", () => { wkStart = addDays(wkStart,-7); loadWeek(); });
+$("wkNext").addEventListener("click", () => { wkStart = addDays(wkStart,7); loadWeek(); });
+$("wkPinGo").addEventListener("click", () => { const v = $("wkPinIn").value.trim(); if (!v) return; store.set(pinKey(who()), v); $("wkPinIn").value = ""; loadWeek(); });
+
+async function loadWeek(){
+const w = who(); const from = wkStart, to = addDays(from,6);
+$("wkRange").textContent = fmtShort(from)+" – "+fmtShort(to);
+$("wkTotal").textContent = "";
+$("wkErr").classList.add("hidden");
+if (!w || !w.url){ renderWeek([]); return; }
+if (!savedPin(w)){ $("wkPin").classList.remove("hidden"); $("wkDays").innerHTML = ""; return; }
+$("wkPin").classList.add("hidden");
+$("wkDays").innerHTML = '<div class="note" style="text-align:center;margin-top:16px">Loading…</div>';
+try{
+const u = w.url + (w.url.includes("?") ? "&" : "?") + "pin=" + encodeURIComponent(savedPin(w)) + "&from=" + from + "&to=" + to;
+const r = await (await fetch(u, {redirect:"follow"})).json();
+if (from !== wkStart) return;
+if (!r.ok) throw new Error(r.error || "Something went wrong");
+renderWeek(r.rows || []);
+}catch(err){
+if (from !== wkStart) return;
+const bad = /wrong pin/i.test(err.message);
+if (bad){ try{ localStorage.removeItem("dabe_"+pinKey(w)); }catch(e){} $("wkPin").classList.remove("hidden"); }
+$("wkErr").textContent = bad ? "That PIN isn’t right. Check it with Gabriel and try again." : "Couldn’t load your week – check your signal and try again. (" + err.message + ")";
+$("wkErr").classList.remove("hidden"); $("wkDays").innerHTML = "";
+}
+}
+
+function renderWeek(rows){
+wkRows = rows; const today = melDate(0); let tot = 0, km = 0, html = "";
+for (let i=0;i<7;i++){
+const iso = addDays(wkStart,i), d = isoD(iso);
+const day = rows.filter(x => x.iso === iso);
+day.forEach(x => { tot += hrs(x.hours); km += hrs(x.km); });
+html += '<button type="button" class="day'+(day.length?' has':'')+(iso===today?' today':'')+'" data-iso="'+iso+'"><div><div class="dn">'+d.toLocaleDateString("en-AU",{weekday:"short"})+'</div><div class="dd">'+d.toLocaleDateString("en-AU",{day:"numeric",month:"short"})+'</div></div><div>'+
+(day.length ? day.map(x => '<div class="shift"><div class="top"><div>'+esc(x.start)+' – '+esc(x.finish)+'<span class="'+stCls(x.status)+'">'+esc(stTxt(x.status))+'</span></div><div class="h">'+hrs(x.hours).toFixed(2)+' h</div></div><div class="m">'+esc(x.project)+(hrs(x.km) ? ' · '+esc(hrs(x.km))+' km' : '')+'</div></div>').join("") : '<div class="none">No shift</div>')+
+'</div></button>';
+}
+$("wkDays").innerHTML = html;
+$("wkTotal").textContent = tot.toFixed(2)+" hrs"+(km ? " · "+km+" km" : "");
+}
+
+function openDay(iso){
+const day = wkRows.filter(x => x.iso === iso); let tot = 0;
+day.forEach(x => { tot += hrs(x.hours); });
+$("dayTitle").textContent = isoD(iso).toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"});
+$("dayTotal").textContent = day.length ? tot.toFixed(2)+" hrs total" : "";
+$("dayBody").innerHTML = day.length ? day.map(x => {
+const rows = [["Project",x.project],["Location(s)",x.location||"—"],["Time",x.start+" → "+x.finish],["Hours",hrs(x.hours).toFixed(2)+" h"],["KMs",hrs(x.km) ? String(hrs(x.km)) : "—"],["Status",stTxt(x.status)],["Comments",x.comments||"—"]];
+return '<div class="sum">'+rows.map(r => '<div><span>'+esc(r[0])+'</span><span>'+esc(r[1])+'</span></div>').join("")+'</div>';
+}).join("") : '<div class="note" style="margin:14px 0">No shifts logged for this day.</div>';
+$("daySheet").classList.add("open");
+}
+$("wkDays").addEventListener("click", e => { const b = e.target.closest(".day"); if (b) openDay(b.dataset.iso); });
+$("dayClose").addEventListener("click", () => $("daySheet").classList.remove("open"));
+$("daySheet").addEventListener("click", e => { if (e.target === $("daySheet")) $("daySheet").classList.remove("open"); });
+
+/* ---- my pay (only for contractors with pay:true) ---- */
+let payStart = "", payData = null;
+function updatePayTab(){ const w = who(), has = !!(w && w.pay); $("payTab").classList.toggle("hidden", !has); const wt = document.querySelector('#tabs [data-t="week"]'); if (wt) wt.classList.toggle("hidden", has); }
+function money(n){ return "$" + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function nh(n){ return String(Math.round(n * 100) / 100); }
+function t12(s){ return String(s || "").replace(/^0/, ""); }
+function fmtDMY(iso){ const p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+function payRowsData(){ return payData && payData.pay ? payData.pay.rows : []; }
+function payStatus(rows){
+if (!rows.length) return "";
+if (rows.every(x => /paid/i.test(x.status))) return "Paid";
+if (rows.some(x => /approved|paid/i.test(x.status))) return "Approved";
+return "Pending";
+}
+function payLine(title, detail, amt){
+return '<div class="pl"><div class="a"><b>' + esc(title) + '</b>' + (detail ? '<span>' + esc(detail) + '</span>' : '') + '</div><div class="m">' + money(amt) + '</div></div>';
+}
+function payDay(x){
+const d = isoD(x.iso), dow = d.getDay();
+const ordLabel = dow === 6 ? "Saturday rate" : dow === 0 ? "Sunday rate" : "Day rate";
+let lines = "";
+if (x.ordH > 0) lines += payLine(ordLabel, nh(x.ordH) + " h × " + money(x.ordRate), x.ordP);
+if (x.otH > 0) lines += payLine("Night / overtime rate", nh(x.otH) + " h × " + money(x.otRate), x.otP);
+if (x.single > 0) lines += payLine("Single charge", "1 store", x.single);
+  if (x.elH > 0) lines += payLine("Early / late rate", nh(x.elH) + " h × " + money(x.elRate), x.elP);
+if (x.km > 0) lines += payLine("Kilometres", nh(x.km) + " km × " + money(x.kmRate), x.kmP);
+if (x.trH > 0) lines += payLine("Travel time", nh(x.trH) + " h × " + money(x.trRate), x.trP);
+if (x.lafha > 0) lines += payLine("LAFHA", "Living away from home", x.lafha);
+if (x.fuel > 0) lines += payLine("Fuel allowance", "", x.fuel);
+return '<button type="button" class="pday" data-iso="' + x.iso + '"><div class="pdh"><div><div class="pdn">' + d.toLocaleDateString("en-AU",{weekday:"short"}) + ' ' + d.toLocaleDateString("en-AU",{day:"numeric",month:"short"}) + '</div><div class="pdt">' + esc(t12(x.start)) + ' – ' + esc(t12(x.finish)) + '</div></div><div class="pdv">' + money(x.total) + '</div></div>' + lines + '</button>';
+}
+
+function payTotals(rows){
+  var s = {ord:0,ordP:0,ot:0,otP:0,el:0,elP:0,tr:0,trP:0,km:0,kmP:0,single:0,lafha:0,fuel:0,total:0};
+  rows.forEach(function(x){
+    s.ord += +x.ordH||0; s.ordP += +x.ordP||0; s.ot += +x.otH||0; s.otP += +x.otP||0;
+    s.el += +x.elH||0; s.elP += +x.elP||0; s.tr += +x.trH||0; s.trP += +x.trP||0;
+    s.km += +x.km||0; s.kmP += +x.kmP||0; s.single += +x.single||0; s.lafha += +x.lafha||0; s.fuel += +x.fuel||0; s.total += +x.total||0;
+  });
+  var L = [];
+  if (s.ord > 0) L.push(["Normal hours", nh(s.ord) + " h", s.ordP]);
+  if (s.ot > 0) L.push(["Overtime / night hours", nh(s.ot) + " h", s.otP]);
+  if (s.el > 0) L.push(["Early / late hours", nh(s.el) + " h", s.elP]);
+  if (s.tr > 0) L.push(["Travel time", nh(s.tr) + " h", s.trP]);
+  if (s.km > 0) L.push(["Kilometres", nh(s.km) + " km", s.kmP]);
+  if (s.single > 0) L.push(["Single charge", "", s.single]);
+  if (s.lafha > 0) L.push(["LAFHA", "", s.lafha]);
+  if (s.fuel > 0) L.push(["Fuel allowance", "", s.fuel]);
+  var listed = L.reduce(function(a,r){ return a + r[2]; }, 0);
+  if (Math.abs(s.total - listed) > 0.01) L.push(["Other", "", s.total - listed]);
+  return '<div class="ptot"><h3>Week totals</h3>' + L.map(function(r){
+    return '<div class="tl"><span>' + r[0] + '</span><span class="q">' + r[1] + '</span><b>' + money(r[2]) + '</b></div>';
+  }).join("") + '<div class="tl2"><span>Week total</span><b>' + money(s.total) + '</b></div></div>';
+}
+
+function renderPay(r){
+const rows = r.pay.rows; let tot = 0; rows.forEach(x => { tot += x.total; });
+$("payTotal").textContent = rows.length ? money(tot) + " · " + rows.length + (rows.length === 1 ? " shift" : " shifts") : "No shifts";
+const st = payStatus(rows);
+$("payStatus").innerHTML = rows.length ? '<span class="' + (st === "Pending" ? "st" : "st ok") + '" style="margin-left:0">' + st + '</span><span>Paid weekly, by Wednesday</span>' : "";
+$("payDays").innerHTML = rows.length ? rows.map(payDay).join("") + payTotals(rows) : '<div class="note" style="text-align:center;margin-top:16px">No shifts logged this week.</div>';
+$("payGen").classList.toggle("hidden", !rows.length);
+}
+async function loadPay(){
+const w = who(); const from = payStart, to = addDays(from, 6);
+$("payRange").textContent = fmtShort(from) + " – " + fmtShort(to);
+$("payTotal").textContent = ""; $("payStatus").innerHTML = ""; $("payErr").classList.add("hidden"); $("payGen").classList.add("hidden");
+if (!w || !w.url || !w.pay){ $("payDays").innerHTML = ""; return; }
+if (!savedPin(w)){ $("payPin").classList.remove("hidden"); $("payDays").innerHTML = ""; return; }
+$("payPin").classList.add("hidden");
+$("payDays").innerHTML = '<div class="note" style="text-align:center;margin-top:16px">Loading…</div>';
+try{
+const u = w.url + (w.url.includes("?") ? "&" : "?") + "pin=" + encodeURIComponent(savedPin(w)) + "&pay=1&from=" + from + "&to=" + to;
+const r = await (await fetch(u, {redirect:"follow"})).json();
+if (from !== payStart) return;
+if (!r.ok) throw new Error(r.error || "Something went wrong");
+if (!r.pay) throw new Error("Pay view isn’t set up for you yet");
+payData = r; renderPay(r);
+}catch(err){
+if (from !== payStart) return;
+const bad = /wrong pin/i.test(err.message);
+if (bad){ try{ localStorage.removeItem("dabe_" + pinKey(w)); }catch(e){} $("payPin").classList.remove("hidden"); }
+$("payErr").textContent = bad ? "That PIN isn’t right. Check it with Gabriel and try again." : "Couldn’t load your pay – check your signal and try again. (" + err.message + ")";
+$("payErr").classList.remove("hidden"); $("payDays").innerHTML = "";
+}
+}
+$("payPrev").addEventListener("click", () => { payStart = addDays(payStart, -7); loadPay(); });
+$("payNext").addEventListener("click", () => { payStart = addDays(payStart, 7); loadPay(); });
+$("payPinGo").addEventListener("click", () => { const v = $("payPinIn").value.trim(); if (!v) return; store.set(pinKey(who()), v); $("payPinIn").value = ""; loadPay(); });
+
+/* ---- invoice ---- */
+const profKey = w => "prof_" + w.name;
+function getProf(w){ try{ return JSON.parse(store.get(profKey(w)) || "null"); }catch(e){ return null; } }
+function openProf(){
+const w = who(), p = getProf(w) || {};
+$("pfName").value = p.name || w.name; $("pfAddr").value = p.addr || ""; $("pfAbn").value = p.abn || ""; $("pfBsb").value = p.bsb || ""; $("pfAcct").value = p.acct || "";
+$("pfErr").classList.remove("show"); $("pfSheet").classList.add("open");
+}
+$("pfSave").addEventListener("click", () => {
+const v = {name:$("pfName").value.trim(), addr:$("pfAddr").value.trim(), abn:$("pfAbn").value.trim(), bsb:$("pfBsb").value.trim(), acct:$("pfAcct").value.trim()};
+if (!v.name || !v.addr || !v.abn || !v.bsb || !v.acct){ $("pfErr").classList.add("show"); return; }
+store.set(profKey(who()), JSON.stringify(v));
+$("pfSheet").classList.remove("open"); openInv();
+});
+$("pfCancel").addEventListener("click", () => $("pfSheet").classList.remove("open"));
+function invNumber(rows){
+let n = 0; rows.forEach(x => { if (x.inv > n) n = x.inv; });
+if (n) return n;
+var base = (payData && payData.pay ? payData.pay.maxInv : 0) + 1;
+var st = invStore(), wk = invWeekKey();
+if (st.weeks[wk]) return st.weeks[wk];
+return Math.max(base, who().invNext || 0, st.last ? st.last + 1 : 0);
+}
+function invKey() { return "dabe_invno_" + who().name; }
+function invStore() { try { var s = JSON.parse(localStorage.getItem(invKey()) || "{}"); return { last: s.last || 0, weeks: s.weeks || {} }; } catch (e) { return { last: 0, weeks: {} }; } }
+function invWeekKey() { return String(payStart && payStart.getTime ? payStart.getTime() : payStart); }
+function invRecord() { try { var n = parseInt($("ivNo").value, 10); if (!n) return; var st = invStore(); st.weeks[invWeekKey()] = n; if (n > st.last) st.last = n; localStorage.setItem(invKey(), JSON.stringify(st)); } catch (e) {} }
+function invDate(){ return fmtDMY(melDate(0)); }
+function openInv(){
+const rows = payRowsData(); if (!rows.length) return;
+if (!getProf(who())){ openProf(); return; }
+let tot = 0; rows.forEach(x => { tot += x.total; });
+$("ivNo").value = invNumber(rows); $("ivDate").textContent = invDate(); $("ivMsg").textContent = "";
+$("ivNote").textContent = "Week of " + fmtShort(payStart) + " – " + fmtShort(addDays(payStart, 6));
+$("ivLines").innerHTML = rows.map(x => '<div class="ivl"><span>' + fmtDMY(x.iso) + '</span><span>' + esc(x.location) + '</span><span class="n">' + money(x.total) + '</span></div>').join("");
+$("ivTotal").textContent = money(tot);
+$("ivSheet").classList.add("open");
+}
+$("payGenBtn").addEventListener("click", openInv);
+$("payDays").addEventListener("click", e => { const b = e.target.closest(".pday"); if (!b) return; wkRows = payRowsData().map(x => ({iso:x.iso, project:x.project, location:x.location, start:t12(x.start), finish:t12(x.finish), hours:x.hours, km:x.km ? String(x.km) : "", status:x.status, comments:x.comments})); openDay(b.dataset.iso); });
+$("ivEdit").addEventListener("click", () => { $("ivSheet").classList.remove("open"); openProf(); });
+$("ivClose").addEventListener("click", () => $("ivSheet").classList.remove("open"));
+function buildPdf(){
+const J = window.jspdf && window.jspdf.jsPDF; if (!J) return null;
+const w = who(), p = getProf(w) || {}, rows = payRowsData();
+const doc = new J({unit:"mm", format:"a4"});
+const L = 18, R = 192; let y = 24;
+doc.setFont("helvetica","bold"); doc.setFontSize(26); doc.setTextColor(31,105,92); doc.text("INVOICE", L, y);
+doc.setFontSize(10); doc.setTextColor(90,100,96); doc.setFont("helvetica","normal");
+doc.text("Invoice no. " + $("ivNo").value.trim(), R, y - 8, {align:"right"});
+doc.text("Date " + invDate(), R, y - 2, {align:"right"});
+y += 5; doc.setDrawColor(31,105,92); doc.setLineWidth(0.6); doc.line(L, y, R, y);
+y += 10;
+doc.setFontSize(8); doc.setTextColor(106,120,115); doc.setFont("helvetica","bold");
+doc.text("FROM", L, y); doc.text("BILL TO", 110, y);
+y += 6; doc.setFontSize(10.5); doc.setTextColor(27,31,29);
+doc.text(p.name || w.name, L, y); doc.text("DABE LABOUR PTY LTD", 110, y);
+doc.setFont("helvetica","normal");
+const addr = doc.splitTextToSize(p.addr || "", 80);
+doc.text(addr, L, y + 5);
+doc.text("ABN " + (p.abn || ""), L, y + 5 + addr.length * 5);
+doc.text("ABN 96 668 137 693", 110, y + 5);
+doc.text("30 Airlie Grove, Seaford VIC 3198", 110, y + 10);
+y += 5 + Math.max(addr.length * 5 + 5, 15) + 8;
+doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(106,120,115);
+doc.text("DATE", L, y); doc.text("JOB", L + 32, y); doc.text("TOTAL", R, y, {align:"right"});
+y += 2; doc.setDrawColor(200,208,205); doc.setLineWidth(0.3); doc.line(L, y, R, y);
+doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(27,31,29);
+let tot = 0;
+rows.forEach(x => {
+y += 7; if (y > 262){ doc.addPage(); y = 24; }
+doc.text(fmtDMY(x.iso), L, y); doc.text(String(x.location || "").slice(0, 60), L + 32, y); doc.text(money(x.total), R, y, {align:"right"});
+doc.setDrawColor(227,232,230); doc.line(L, y + 2.5, R, y + 2.5); tot += x.total;
+});
+y += 11; doc.setDrawColor(27,31,29); doc.setLineWidth(0.6); doc.line(L, y - 6, R, y - 6);
+doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.text("TOTAL", L, y); doc.setFontSize(15); doc.text(money(tot), R, y, {align:"right"});
+y += 14; if (y > 255){ doc.addPage(); y = 24; }
+doc.setFontSize(8); doc.setTextColor(106,120,115); doc.text("PAY TO", L, y);
+doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(27,31,29);
+doc.text("BSB " + (p.bsb || "") + "   Account " + (p.acct || ""), L, y + 6);
+doc.text("No GST charged.", L, y + 12);
+return doc;
+}
+function pdfName(){ invRecord(); return "Invoice " + $("ivNo").value.trim() + " - " + ((getProf(who()) || {}).name || who().name) + ".pdf"; }
+function pdfReady(){
+if (!$("ivNo").value.trim()){ $("ivMsg").textContent = "Add an invoice number first."; return null; }
+const d = buildPdf();
+if (!d) $("ivMsg").textContent = "Couldn’t make the PDF – check your signal and try again.";
+return d;
+}
+$("ivSave").addEventListener("click", () => { const d = pdfReady(); if (d){ d.save(pdfName()); $("ivMsg").textContent = "Saved."; } });
+$("ivShare").addEventListener("click", async () => {
+const d = pdfReady(); if (!d) return;
+const name = pdfName();
+try{
+const file = new File([d.output("blob")], name, {type:"application/pdf"});
+if (navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file], title:name});
+else { d.save(name); $("ivMsg").textContent = "Saved."; }
+}catch(e){ if (!e || e.name !== "AbortError") d.save(name); }
+});
+
+/* ---- init ---- */
+buildName(); buildRoles(); buildProject(); buildTravel();
+$("date").value = melDate(0);
+applyDefaultRole(); showRate(); loadRecent(); updatePayTab();
+</script>
+<script>
+(function(){function nm(){try{var n=new URLSearchParams(location.search).get("name")||"";return n.trim().split(/\s+/)[0]}catch(e){return ""}}
+var f=nm();if(f)document.getElementById("welcome").innerHTML='Welcome, <span></span>';if(f)document.querySelector("#welcome span").textContent=f;})();
+</script>
+</body>
+</html>
