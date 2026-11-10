@@ -512,6 +512,17 @@ function fmt12(t){
   return hh+":"+String(m).padStart(2,"0")+" "+ap;
 }
 
+/* Show any time the sheet sends as "7:00 am": handles raw day-fractions (0.2916666667), 24h "07:00"/"16:30" and "07:00 AM". */
+function tShow(v){
+  var s = String(v == null ? "" : v).trim(); if (!s) return "";
+  if (/^\d*\.\d+$|^0$/.test(s)) { var n = parseFloat(s); if (n >= 0 && n < 1) { var mins = Math.round(n * 1440) % 1440; return fmt12(Math.floor(mins/60) + ":" + (mins % 60)); } }
+  var m = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap])\.?m\.?$/i);
+  if (m) return (+m[1]) + ":" + m[2] + " " + m[3].toLowerCase() + "m";
+  m = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (m && +m[1] < 24) return fmt12(m[1] + ":" + m[2]);
+  return s;
+}
+
 /* ---- build the form ---- */
 const contractors = CONFIG.CONTRACTORS;
 const previewMode = contractors.every(c => !c.url);
@@ -875,7 +886,7 @@ async function loadRecent(){
     const r = await (await fetch(u, {redirect:"follow"})).json();
     if (!r.ok || !r.rows.length) return;
     $("recent").innerHTML = r.rows.map(x =>
-      '<li><div>'+esc(x.day.slice(0,3))+' '+esc(x.date)+'<div class="m">'+esc(x.start)+' – '+esc(x.finish)+' · '+esc(x.project)+'</div></div><div class="h">'+esc(x.hours)+' h</div></li>').join("");
+      '<li><div>'+esc(x.day.slice(0,3))+' '+esc(x.date)+'<div class="m">'+esc(tShow(x.start))+' – '+esc(tShow(x.finish))+' · '+esc(x.project)+'</div></div><div class="h">'+esc(x.hours)+' h</div></li>').join("");
     $("recentCard").classList.remove("hidden");
   }catch(e){}
 }
@@ -939,7 +950,7 @@ const iso = addDays(wkStart,i), d = isoD(iso);
 const day = rows.filter(x => x.iso === iso);
 day.forEach(x => { tot += hrs(x.hours); km += hrs(x.km); });
 html += '<button type="button" class="day'+(day.length?' has':'')+(iso===today?' today':'')+'" data-iso="'+iso+'"><div><div class="dn">'+d.toLocaleDateString("en-AU",{weekday:"short"})+'</div><div class="dd">'+d.toLocaleDateString("en-AU",{day:"numeric",month:"short"})+'</div></div><div>'+
-(day.length ? day.map(x => '<div class="shift"><div class="top"><div>'+esc(x.start)+' – '+esc(x.finish)+'<span class="'+stCls(x.status)+'">'+esc(stTxt(x.status))+'</span></div><div class="h">'+hrs(x.hours).toFixed(2)+' h</div></div><div class="m">'+esc(x.project)+(hrs(x.km) ? ' · '+esc(hrs(x.km))+' km' : '')+'</div></div>').join("") : '<div class="none">No shift</div>')+
+(day.length ? day.map(x => '<div class="shift"><div class="top"><div>'+esc(tShow(x.start))+' – '+esc(tShow(x.finish))+'<span class="'+stCls(x.status)+'">'+esc(stTxt(x.status))+'</span></div><div class="h">'+hrs(x.hours).toFixed(2)+' h</div></div><div class="m">'+esc(x.project)+(hrs(x.km) ? ' · '+esc(hrs(x.km))+' km' : '')+'</div></div>').join("") : '<div class="none">No shift</div>')+
 '</div></button>';
 }
 $("wkDays").innerHTML = html;
@@ -952,7 +963,7 @@ day.forEach(x => { tot += hrs(x.hours); });
 $("dayTitle").textContent = isoD(iso).toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"});
 $("dayTotal").textContent = day.length ? tot.toFixed(2)+" hrs total" : "";
 $("dayBody").innerHTML = day.length ? day.map(x => {
-const rows = [["Project",x.project],["Location(s)",x.location||"—"],["Time",x.start+" → "+x.finish],["Hours",hrs(x.hours).toFixed(2)+" h"],["KMs",hrs(x.km) ? String(hrs(x.km)) : "—"],["Status",stTxt(x.status)],["Comments",x.comments||"—"]];
+const rows = [["Project",x.project],["Location(s)",x.location||"—"],["Time",tShow(x.start)+" → "+tShow(x.finish)],["Hours",hrs(x.hours).toFixed(2)+" h"],["KMs",hrs(x.km) ? String(hrs(x.km)) : "—"],["Status",stTxt(x.status)],["Comments",x.comments||"—"]];
 return '<div class="sum">'+rows.map(r => '<div><span>'+esc(r[0])+'</span><span>'+esc(r[1])+'</span></div>').join("")+'</div>';
 }).join("") : '<div class="note" style="margin:14px 0">No shifts logged for this day.</div>';
 $("daySheet").classList.add("open");
@@ -966,7 +977,7 @@ let payStart = "", payData = null;
 function updatePayTab(){ const w = who(), has = !!(w && w.pay); $("payTab").classList.toggle("hidden", !has); const wt = document.querySelector('#tabs [data-t="week"]'); if (wt) wt.classList.toggle("hidden", has); }
 function money(n){ return "$" + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 function nh(n){ return String(Math.round(n * 100) / 100); }
-function t12(s){ return String(s || "").replace(/^0/, ""); }
+function t12(s){ return tShow(s); }
 function fmtDMY(iso){ const p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
 function payRowsData(){ return payData && payData.pay ? payData.pay.rows : []; }
 function payStatus(rows){
